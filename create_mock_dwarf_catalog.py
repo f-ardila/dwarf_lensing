@@ -5,6 +5,11 @@ from halotools.sim_manager import HaloTableCache, CachedHaloCatalog
 from halotools.empirical_models import PrebuiltSubhaloModelFactory
 import time
 
+import sys
+n_loops = int(sys.argv[1])
+
+print n_loops, 'loops'
+
 init_time=time.time()
 
 '''
@@ -14,9 +19,8 @@ sample
 
 def find_nearest_index(array,value):
     idx = (np.abs(np.array(array)-value)).argmin()
-    
-    return idx
 
+    return idx
 
 
 #Bol-Planck model
@@ -54,13 +58,13 @@ mock_galaxies = model.mock.galaxy_table
 mock_galaxies = mock_galaxies['galid', 'x', 'y', 'z', 'stellar_mass']
 mock_galaxies = mock_galaxies[(np.log10(mock_galaxies['stellar_mass'])>=min(dwarf_masses)) & (np.log10(mock_galaxies['stellar_mass'])<9.0)]
 
-model = 0 
+model = 0
 # create subsample with same distribution
 subsample=[]
 copy_mock_galaxies = [list(a) for a in mock_galaxies]
 gal_masses=[g[-1] for g in copy_mock_galaxies]
 
-for i in range(50):
+for i in range(n_loops):
     print i
 
     for dwarf in dwarf_masses:
@@ -71,7 +75,7 @@ for i in range(50):
 	# append to subsample
 	subsample.append(copy_mock_galaxies[index])
 
-    	#do not replace in array of mock galaxy masses 
+    	#do not replace in array of mock galaxy masses
     	del copy_mock_galaxies[index]
     	del gal_masses[index]
 
@@ -86,7 +90,7 @@ print 'remaining mock galaxies: ' + str(len(copy_mock_galaxies))
 print ks_2samp(subsample_masses,dwarf_masses)
 
 #save subsample
-outfile='/Users/fardila/Documents/GitHub/dwarf_lensing/bplanck_dwarfs.npy'
+outfile='/Users/fardila/Documents/GitHub/dwarf_lensing/bplanck_dwarfs_'+str(n_loops)+'.npy'
 np.save(outfile,subsample)
 
 print time.time() - init_time, ' seconds'
