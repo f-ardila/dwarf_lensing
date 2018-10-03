@@ -27,7 +27,7 @@ cosmos_catalog_reference : 'Laigle+2016'
 
 # SMF
 cosmos_SMF_fit_file: 'cosmos2015_dic2017_smf_z01-04_STY0.dat'
-cosmos_SMF_points_file: 'cosmos2015_dic2017_smf_z01-04_Vmax0.dat'
+cosmos_SMF_points_file: 'cosmos2015_dic2017_smf_z01-04_Vmax0_with_header.dat'
 
 #weak lensing
 cosmos_wl_file: 'dwarf_all_lens_laigle2015_nozp2.out'
