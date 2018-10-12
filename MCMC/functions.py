@@ -587,7 +587,9 @@ def emcee_fit(config, verbose=True):
 
 
 ################################################################################
+import time
 
+time1 = time.time()
 config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
 global config, cosmos_data, sim_data
 
@@ -595,3 +597,6 @@ global config, cosmos_data, sim_data
 config, cosmos_data, sim_data = initial_model(config_initial)
 
 emcee_fit(config)
+
+run_time = time.time() - time1
+print('Total time: {0} seconds; {1} minutes; {2} hours'.format(run_time, run_time/60, run_time/3600 ))
