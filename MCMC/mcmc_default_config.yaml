@@ -8,17 +8,18 @@ param_sig: [0.10, 0.10]
 # MCMC Runs
 mcmc_out_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
-mcmc_nsamples: 200
-mcmc_nthreads: 2
-mcmc_nburnin: 100
-mcmc_nwalkers_burnin: 128
-mcmc_nwalkers: 128
+mcmc_nsamples: 5
+mcmc_nthreads: 1
+mcmc_nburnin: 5
+mcmc_nwalkers_burnin: 4
+mcmc_nwalkers: 4
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
-mcmc_ndims: 6
+mcmc_ndims: 2
 mcmc_moves_burnin: 'walk'
-mcmc_walk_s: 1
+mcmc_moves: 'walk'
+
 
 #############################################################################
 # COSMOS
