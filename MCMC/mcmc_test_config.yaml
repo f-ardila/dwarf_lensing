@@ -1,0 +1,76 @@
+# Model parameters
+model_type: 'scatter_only'
+param_ini: [0.4, 0.2]
+param_low: [0.00, 0.00]
+param_upp: [1.00, 1.00]
+param_sig: [0.10, 0.10]
+
+# MCMC Runs
+mcmc_out_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/outfiles/'
+mcmc_prefix: 'cosmos_bplanck'
+mcmc_nsamples: 5
+mcmc_nthreads: 1
+mcmc_nburnin: 5
+mcmc_nwalkers_burnin: 4
+mcmc_nwalkers: 4
+mcmc_smf_only: False
+mcmc_wl_only: False
+mcmc_wl_weight: 1.0
+mcmc_ndims: 2
+mcmc_moves_burnin: 'walk'
+mcmc_moves: 'walk'
+
+
+#############################################################################
+# COSMOS
+cosmos_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/cosmos/'
+cosmos_catalog_reference : 'Laigle+2016'
+
+# SMF
+cosmos_SMF_fit_file: 'cosmos2015_dic2017_smf_z01-04_STY0.dat'
+cosmos_SMF_points_file: 'cosmos2015_dic2017_smf_z01-04_Vmax0_with_header.dat'
+
+#weak lensing
+cosmos_wl_file: 'dwarf_all_lens_laigle2015_nozp2.out'
+
+# Useful information in the catalog
+n_dwarfs: 6876
+mean_mass: 8.52695
+mean_z: 0.301442
+n_objects_with_specz: 1153
+frac_objects_with_specz: 0.167685
+
+#cosmology
+cosmos_h0 : 0.7
+cosmos_omega_m: 0.3
+
+#############################################################################
+# Simulation
+sim_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/bplanck/'
+
+sim_name : 'bolshoi-planck'
+sim_halo_finder : 'rockstar'
+sim_version_name : 'bplanck_dwarfs'
+sim_ptcl_version_name : 'bplanck_dwarfs'
+
+sim_z : 0.278625 #(1/0.78209)-1 ; a=0.78209
+sim_lbox : 250.0 #Mpc/h
+sim_particle_mass : 1.5e8
+sim_particles_per_dimension: 2048
+
+sim_wl_bins : >
+              0.01 0.01598922 0.02947921 0.05184152 0.09251636 0.1643359
+              0.29233885 0.51980176 0.92438561
+sim_h0: 0.678
+sim_omega_m: 0.307
+
+sim_halo_cat_file: 'hlist_0.78209.list'
+sim_output_fname : 'hlist_0.78209.hdf5'
+sim_particle_file : 'bplanck_particles_100m_a0.78209.hdf5'
+sim_columns_to_keep_dict : >
+                          {'halo_id': (1, 'i8'), 'halo_upid': (6, 'i8'),
+                          'halo_mvir': (10, 'f4'), 'halo_x': (17, 'f4'),
+                          'halo_y': (18, 'f4'), 'halo_z': (19, 'f4'),
+                          'halo_vx': (20, 'f4'), 'halo_vy': (21, 'f4'),
+                          'halo_vz': (22, 'f4'), 'halo_rvir': (11, 'f4'),
+                          'halo_mpeak': (60, 'f4')}
