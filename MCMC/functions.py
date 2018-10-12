@@ -114,11 +114,26 @@ def setup_model(cfg, verbose=True):
     cfg['mcmc_run_file'] = os.path.join(
         cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run.npz')
 
+    if cfg['model_type'] == '5SHAM+scatter':
+        # Number of parameters
+        cfg['mcmc_ndims'] = 5
+        cfg['mcmc_labels'] = [r'$a$',
+                              r'$b$',
+                              r'$smhm_m0_0$'',
+                              r'$‘smhm_m1_0’$',
+                              r'$a$',
+                              r'$a$',
+                              r'$a$',]
+
+    cfg['mcmc_burnin_file'] = os.path.join(
+        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin.npz')
+    cfg['mcmc_run_file'] = os.path.join(
+        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run.npz')
 
     return cfg
 
 def initial_model(config, verbose=True):
-    """Initialize the A.S.A.P model."""
+    """Initialize the model."""
     # Configuration for COSMOS data
     data_obs, config_obs = load_observed_data(config, verbose=verbose)
 
@@ -371,7 +386,7 @@ def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
     # Likelihood for DeltaSigma
     dsigma_lnlike_value = dsigma_lnlike(obs_data['cosmos_wl_table'], sim_wl_r, sim_wl_ds)
 
-    if not np.isfinite(dsigma_lnlike_value):
+    if not np.isfinite(smf_lnlike_value) or not np.isfinite(dsigma_lnlike_value):
         return -np.inf
 
     return smf_lnlike_value + config['mcmc_wl_weight'] * dsigma_lnlike_value
@@ -600,3 +615,9 @@ emcee_fit(config)
 
 run_time = time.time() - time1
 print('Total time: {0} seconds; {1} minutes; {2} hours'.format(run_time, run_time/60, run_time/3600 ))
+
+##############################################################################
+#TODO
+#sometimes probability function returns NaN and breaks the chain
+#add other 5 params
+#add proper catalog cuts to match COSMOS mass distribution
