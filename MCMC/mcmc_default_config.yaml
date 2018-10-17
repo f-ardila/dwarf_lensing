@@ -1,9 +1,15 @@
 # Model parameters
-model_type: 'scatter_only'
-param_ini: [0.4, 0.2]
-param_low: [0.00, 0.00]
-param_upp: [1.00, 1.00]
-param_sig: [0.10, 0.10]
+model_type: '5SHMR+scatter'
+param_ini: [0.40, 0.20, 12.50, 10.90, 0.46, 0.57, 1.50]
+param_low: [0.00, 0.00, 10.00, 8.00, 0.00, 0.00, 0.00]
+param_upp: [1.00, 1.00, 14.00, 13.00, 1.00, 1.00, 3.00]
+param_sig: [0.10, 0.10, 0.30, 0.30, 0.10, 0.10, 0.10]
+
+# model_type: 'scatter_only'
+# param_ini: [0.4, 0.2]
+# param_low: [0.00, 0.00]
+# param_upp: [1.00, 1.00]
+# param_sig: [0.10, 0.10]
 
 # MCMC Runs
 mcmc_out_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/outfiles/'

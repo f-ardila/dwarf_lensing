@@ -1,24 +1,32 @@
 # Model parameters
-model_type: 'scatter_only'
-param_ini: [0.4, 0.2]
-param_low: [0.00, 0.00]
-param_upp: [1.00, 1.00]
-param_sig: [0.10, 0.10]
+model_type: '5SHMR+scatter'
+param_ini: [0.40, 0.20, 12.50, 10.90, 0.46, 0.57, 1.50]
+param_low: [0.00, 0.00, 10.00, 8.00, 0.00, 0.00, 0.00]
+param_upp: [1.00, 1.00, 14.00, 13.00, 1.00, 1.00, 3.00]
+param_sig: [0.10, 0.10, 0.30, 0.30, 0.10, 0.10, 0.10]
+
+# model_type: 'scatter_only'
+# param_ini: [0.4, 0.2]
+# param_low: [0.00, 0.00]
+# param_upp: [1.00, 1.00]
+# param_sig: [0.10, 0.10]
 
 # MCMC Runs
 mcmc_out_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
-mcmc_nsamples: 5
+mcmc_nsamples: 2
 mcmc_nthreads: 1
-mcmc_nburnin: 5
-mcmc_nwalkers_burnin: 4
-mcmc_nwalkers: 4
+mcmc_nburnin: 2
+mcmc_nwalkers_burnin: 2
+mcmc_nwalkers: 2
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
 mcmc_ndims: 2
-mcmc_moves_burnin: 'walk'
-mcmc_moves: 'walk'
+mcmc_moves_burnin: 'stretch'
+mcmc_moves: 'stretch'
+mcmc_stretch_a: 2.0
+mcmc_live_dangerously: True #for testing on smaller walker size
 
 
 #############################################################################

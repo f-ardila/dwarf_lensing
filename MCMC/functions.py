@@ -114,16 +114,22 @@ def setup_model(cfg, verbose=True):
     cfg['mcmc_run_file'] = os.path.join(
         cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run.npz')
 
-    if cfg['model_type'] == '5SHAM+scatter':
+    if cfg['model_type'] == '5SHMR+scatter':
         # Number of parameters
-        cfg['mcmc_ndims'] = 5
-        cfg['mcmc_labels'] = [r'$a$',
-                              r'$b$',
-                              r'$smhm_m0_0$'',
-                              r'$‘smhm_m1_0’$',
-                              r'$a$',
-                              r'$a$',
-                              r'$a$',]
+        cfg['mcmc_ndims'] = 7
+        cfg['mcmc_param_labels'] = ['scatter_model_param1',
+                              'scatter_model_param2',
+                              'smhm_m0_0',
+                              'smhm_m1_0',
+                              'smhm_beta_0',
+                              'smhm_delta_0',
+                              'smhm_gamma_0']
+                              
+        cfg['mcmc_0param_labels'] = ['smhm_m0_a',
+                              'smhm_m1_a',
+                              'smhm_beta_a',
+                              'smhm_delta_a',
+                              'smhm_gamma_a',]
 
     cfg['mcmc_burnin_file'] = os.path.join(
         cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin.npz')
@@ -221,15 +227,30 @@ def predict_model(param, config, obs_data, sim_data,
     """
 
     #build_model and populate mock
-    try: #save memory if model already exists
-        sim_data['model'].param_dict['scatter_model_param1'] = param[0]
-        sim_data['model'].param_dict['scatter_model_param2'] = param[1]
+    if 'model' in sim_data: #save memory if model already exists
+        for i, model_param in enumerate(config['mcmc_param_labels']):
+            sim_data['model'].param_dict[model_param] = param[i]
+
+        #set redshift dependence to 0
+        for i, model_param in enumerate(config['mcmc_0param_labels']):
+            sim_data['model'].param_dict[model_param] = 0
+
         sim_data['model'].mock.populate()
         print('mock.populate')
 
-    except KeyError:
+    else:
         sim_data['model'] = PrebuiltSubhaloModelFactory('behroozi10', redshift=config['sim_z'],
-                                        scatter_abscissa=[12, 15], scatter_ordinates=[param[0], param[1]])
+                                        scatter_abscissa=[12, 15],
+                                        scatter_ordinates=[param[0], param[1]])
+                
+        for i, model_param in enumerate(config['mcmc_param_labels']):
+            sim_data['model'].param_dict[model_param] = param[i]
+
+        #set redshift dependence to 0
+        for i, model_param in enumerate(config['mcmc_0param_labels']):
+            sim_data['model'].param_dict[model_param] = 0
+        
+        #populate mock
         sim_data['model'].populate_mock(deepcopy(sim_data['halocat']))
         print('populate_mock')
 
@@ -424,7 +445,8 @@ def mcmc_setup_moves(config, move_col):
     if config[move_col] == 'snooker':
         emcee_moves = emcee.moves.DESnookerMove()
     elif config[move_col] == 'stretch':
-        emcee_moves = emcee.moves.StretchMove(a=config['mcmc_stretch_a'])
+        emcee_moves = emcee.moves.StretchMove(a=config['mcmc_stretch_a'],
+                                                live_dangerously=config['mcmc_live_dangerously'])
     elif config[move_col] == 'walk':
         emcee_moves = emcee.moves.WalkMove()
     elif config[move_col] == 'kde':
@@ -441,6 +463,7 @@ def mcmc_burnin(mcmc_sampler, mcmc_position, config, verbose=True):
     # Burn-in
     if verbose:
         print("# Phase: Burn-in ...")
+    
     mcmc_burnin_result = mcmc_sampler.run_mcmc(
         mcmc_position, config['mcmc_nburnin'],
         progress=True)
@@ -565,11 +588,10 @@ def emcee_fit(config, verbose=True):
         # define the ensemble moves object for walkers during burn in
         burnin_move = mcmc_setup_moves(config, 'mcmc_moves_burnin')
         # define sampler
-        burnin_sampler = emcee.EnsembleSampler(
-            config['mcmc_nwalkers_burnin'],
-            config['mcmc_ndims'],
-            ln_prob_global,
-            moves=burnin_move) #,pool=pool)
+        burnin_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers_burnin'],
+                                               config['mcmc_ndims'], 
+                                                ln_prob_global,
+                                                moves=burnin_move) 
 
         # Burn-in
         mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
@@ -590,7 +612,7 @@ def emcee_fit(config, verbose=True):
         mcmc_move = mcmc_setup_moves(config, 'mcmc_moves')
         # define sampler
         mcmc_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers'],
-                                             config['mcmc_ndims'],
+                                             config['mcmc_ndims'], 
                                              ln_prob_global,
                                              moves=mcmc_move)
 
@@ -618,6 +640,5 @@ print('Total time: {0} seconds; {1} minutes; {2} hours'.format(run_time, run_tim
 
 ##############################################################################
 #TODO
-#sometimes probability function returns NaN and breaks the chain
 #add other 5 params
 #add proper catalog cuts to match COSMOS mass distribution
