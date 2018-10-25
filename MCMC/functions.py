@@ -1,7 +1,6 @@
 from __future__ import division, print_function, unicode_literals
 
 import time
-import argparse
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -37,6 +36,11 @@ def parse_config(config_file):
 def load_observed_data(cfg, verbose=True):
     """Load the observed data."""
 
+    #dwarf masses
+    cosmos_dwarf_sample_data  = fits.open(os.path.join(cfg['cosmos_dir'],
+                                       cfg['cosmos_dwarf_file']))[1].data
+    cosmos_dwarf_masses = cosmos_dwarf_sample_data['mass_med']
+
     #SMF
     cosmos_SMF_fit_table = ascii.read(os.path.join(cfg['cosmos_dir'],
                                        cfg['cosmos_SMF_fit_file']))
@@ -59,7 +63,8 @@ def load_observed_data(cfg, verbose=True):
 #     cfg['obs_volume'] = obs_volume
 
     return {'cosmos_wl_r': cosmos_wl_r, 'cosmos_wl_ds': cosmos_wl_ds, 'cosmos_wl_table': cosmos_lensing_table,
-            'cosmos_SMF_fit_table': cosmos_SMF_fit_table, 'cosmos_SMF_points_table': cosmos_SMF_points_table}, cfg
+            'cosmos_SMF_fit_table': cosmos_SMF_fit_table, 'cosmos_SMF_points_table': cosmos_SMF_points_table,
+             'cosmos_dwarf_masses': cosmos_dwarf_masses}, cfg
 
 def load_sim_data(cfg):
     """Load the UniverseMachine data."""
@@ -84,7 +89,7 @@ def load_sim_data(cfg):
     particle_masses = np.zeros(num_ptcls_to_use) + halocat.particle_mass
     downsampling_factor = (cfg['sim_particles_per_dimension']**3)/float(len(particles))
 
-    #other parameters
+    # other parameters
     cfg['sim_cosmo'] = FlatLambdaCDM(H0=cfg['sim_h0'] * 100.0,
                                     Om0=cfg['sim_omega_m'])
 
@@ -124,7 +129,7 @@ def setup_model(cfg, verbose=True):
                               'smhm_beta_0',
                               'smhm_delta_0',
                               'smhm_gamma_0']
-                              
+
         cfg['mcmc_0param_labels'] = ['smhm_m0_a',
                               'smhm_m1_a',
                               'smhm_beta_a',
@@ -153,25 +158,25 @@ def initial_model(config, verbose=True):
 
 def compute_SMF(model, config, nbins=100):
 
-    #Read stellar masses
+    # Read stellar masses
     M = model.mock.galaxy_table['stellar_mass']
 
-    #Take logarithm
+    # Take logarithm
     logM = np.log10(M)
 
-    #Survey volume in Mpc3
+    # Survey volume in Mpc3
     L=config['sim_lbox']
     h0=config['sim_h0']
     V = (L/h0)**3
 
-    #Unnormalized histogram and bin edges
+    # Unnormalized histogram and bin edges
     Phi,edg = np.histogram(logM,bins=nbins)
 
-    #Bin size
+    # Bin size
     dM    = edg[1] - edg[0]
     bin_centers   = edg[0:-1] + dM/2.
 
-    #Normalize to volume and bin size
+    # Normalize to volume and bin size
     Phi   = Phi / float(V) / dM
     logPhi= np.log10(Phi)
 
@@ -179,16 +184,23 @@ def compute_SMF(model, config, nbins=100):
 
 def compute_deltaSigma(model, config):
 
-    #select subsample of dwarfs from galaxy catalog
-    galaxies_table=model.mock.galaxy_table[np.log10(model.mock.galaxy_table['stellar_mass'])>11]
+    # select subsample of dwarfs from galaxy catalog
+    mock_galaxies = model.mock.galaxy_table
+    mock_galaxies = mock_galaxies['x', 'y', 'z', 'stellar_mass']
+    mock_galaxies = np.array(mock_galaxies[(np.log10(mock_galaxies['stellar_mass'])>=min(cosmos_data['cosmos_dwarf_masses'])) & \
+                                  (np.log10(mock_galaxies['stellar_mass'])<9.0)])
+    # half_mock_galaxies = np.random.choice(mock_galaxies,500000)
+    galaxies_table= create_dwarf_catalog_with_matched_mass_distribution(cosmos_data['cosmos_dwarf_masses'],
+                                                                    mock_galaxies,
+                                                                    n_nearest = 50)
 
-    #read in galaxy positions
+    # read in galaxy positions
     x = galaxies_table['x']
     y = galaxies_table['y']
     z = galaxies_table['z']
     galaxies = np.vstack((x, y, z)).T
 
-    #mass enclosed by cylinders around each galaxy
+    # mass enclosed by cylinders around each galaxy
     period=model.mock.Lbox
     r_bins=[float(r) for r in config['sim_wl_bins'].split()]
 
@@ -197,7 +209,7 @@ def compute_deltaSigma(model, config):
 
     # delta Sigma
     rp, ds = delta_sigma_from_precomputed_pairs(galaxies, mass_encl, r_bins, period, cosmology=config['sim_cosmo'])
-    ds = ds/1e12 #there seems to be a discrepancy in units pc^2 --> Mpc^2
+    ds = ds/1e12 # there seems to be a discrepancy in units pc^2 --> Mpc^2
 
     return rp, ds
 
@@ -226,12 +238,12 @@ def predict_model(param, config, obs_data, sim_data,
         Show the comparisons of WL.
     """
 
-    #build_model and populate mock
-    if 'model' in sim_data: #save memory if model already exists
+    # build_model and populate mock
+    if 'model' in sim_data: # save memory if model already exists
         for i, model_param in enumerate(config['mcmc_param_labels']):
             sim_data['model'].param_dict[model_param] = param[i]
 
-        #set redshift dependence to 0
+        # set redshift dependence to 0
         for i, model_param in enumerate(config['mcmc_0param_labels']):
             sim_data['model'].param_dict[model_param] = 0
 
@@ -242,15 +254,15 @@ def predict_model(param, config, obs_data, sim_data,
         sim_data['model'] = PrebuiltSubhaloModelFactory('behroozi10', redshift=config['sim_z'],
                                         scatter_abscissa=[12, 15],
                                         scatter_ordinates=[param[0], param[1]])
-                
+
         for i, model_param in enumerate(config['mcmc_param_labels']):
             sim_data['model'].param_dict[model_param] = param[i]
 
-        #set redshift dependence to 0
+        # set redshift dependence to 0
         for i, model_param in enumerate(config['mcmc_0param_labels']):
             sim_data['model'].param_dict[model_param] = 0
-        
-        #populate mock
+
+        # populate mock
         sim_data['model'].populate_mock(deepcopy(sim_data['halocat']))
         print('populate_mock')
 
@@ -289,12 +301,13 @@ def predict_model(param, config, obs_data, sim_data,
 
     return smf_mass_bins, smf_log_phi, wl_r, wl_ds
 
+# plotting
 def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_fit_table):
 
-    #plot sim
+    # plot sim
     plt.plot(sim_mass_centers, sim_logPhi, c='r', label='Bolshoi-Planck halos')
 
-    #plot COSMOS
+    # plot COSMOS
     plt.plot(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi'], label='COSMOS z~0.2 fit')
     plt.fill_between(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi_inf'],
                      cosmos_SMF_fit_table['log_phi_sup'], alpha=0.5)
@@ -335,7 +348,7 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
     __=ax.legend(loc='best', fontsize=13)
     __=plt.xticks(fontsize=15); plt.yticks(fontsize=15)
 
-    #plt.title('Matched Mass distribution')
+    # plt.title('Matched Mass distribution')
     plt.show()
 
 def flat_prior(param_tuple, param_low, param_upp):
@@ -349,20 +362,20 @@ def flat_prior(param_tuple, param_low, param_upp):
 def smf_lnlike(obs_smf_fit_table, obs_smf_points_table, sim_smf_mass_bins, sim_smf_log_phi):
     """Calculate the likelihood for SMF."""
 
-    #get same bins in simulations as in observations
+    # get same bins in simulations as in observations
     sim_smf_log_phi_interpolated = np.interp(obs_smf_points_table['logM'], sim_smf_mass_bins, sim_smf_log_phi)
 
-    #difference
+    # difference
     smf_diff = (np.array(sim_smf_log_phi_interpolated) - np.array(obs_smf_points_table['Phi']))
 
-    #variance
+    # variance
     obs_mean_smf_error = np.mean([obs_smf_points_table['Phi_err+'] , obs_smf_points_table['Phi_err-'] ])
     smf_var = np.array(obs_mean_smf_error ** 2)
 
-    #chi2
+    # chi2
     smf_chi2 = (smf_diff ** 2 / smf_var).sum()
 
-    #likelihood
+    # likelihood
     smf_lnlike = -0.5 * (smf_chi2 + np.log(2 * np.pi * smf_var).sum())
 
 
@@ -375,7 +388,7 @@ def smf_lnlike(obs_smf_fit_table, obs_smf_points_table, sim_smf_mass_bins, sim_s
 def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds):
     """Calculate the likelihood for WL profile."""
 
-    #make sure same bins
+    # make sure same bins
     decimal_places_to_round_bins = 5
     assert np.all(sim_wl_r.round(decimal_places_to_round_bins) == \
                   np.array(cosmos_data['cosmos_wl_table']['R(Mpc)']).round(decimal_places_to_round_bins))
@@ -463,7 +476,7 @@ def mcmc_burnin(mcmc_sampler, mcmc_position, config, verbose=True):
     # Burn-in
     if verbose:
         print("# Phase: Burn-in ...")
-    
+
     mcmc_burnin_result = mcmc_sampler.run_mcmc(
         mcmc_position, config['mcmc_nburnin'],
         progress=True)
@@ -589,9 +602,9 @@ def emcee_fit(config, verbose=True):
         burnin_move = mcmc_setup_moves(config, 'mcmc_moves_burnin')
         # define sampler
         burnin_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers_burnin'],
-                                               config['mcmc_ndims'], 
+                                               config['mcmc_ndims'],
                                                 ln_prob_global,
-                                                moves=burnin_move) 
+                                                moves=burnin_move)
 
         # Burn-in
         mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
@@ -612,7 +625,7 @@ def emcee_fit(config, verbose=True):
         mcmc_move = mcmc_setup_moves(config, 'mcmc_moves')
         # define sampler
         mcmc_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers'],
-                                             config['mcmc_ndims'], 
+                                             config['mcmc_ndims'],
                                              ln_prob_global,
                                              moves=mcmc_move)
 
@@ -620,7 +633,69 @@ def emcee_fit(config, verbose=True):
 
     return mcmc_run_result
 
+## matching dwarf catalog with mock functions
+def find_nearest_new_indices_sorted(index, n, existing_indices, length):
+    """
+    index: index of closest value
+    n: number of closest
+    existing_indices: indices that already exist to avoid repeats
 
+    return:
+    indices of n nearest rows
+    """
+
+    # indices of nearest rows
+    nearest_rows=[]
+
+    # append index
+    i=0
+    if index not in existing_indices:
+            nearest_rows.append(index)
+
+    #append next nearest indices
+    while len(nearest_rows) < n:
+
+        if index + i not in existing_indices and index + i not in nearest_rows and index + i<length:
+            nearest_rows.append(index + i)
+
+        if len(nearest_rows) < n and index - i not in existing_indices and index - i not in nearest_rows and index - i>0:
+            nearest_rows.append(index - i)
+
+        i += 1
+
+    return nearest_rows
+
+def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galaxies, n_nearest):
+    """
+    dwarf_masses: masses of COSMOS dwarfs
+    mock_galaxies: array of mock galaxies from halotools
+    n_nearest: number of nearest mock galaxies to use (i.e. number of times to
+               sample full COSMOS dwarf catalog)
+
+    return:
+    array of the sample of mock dwarfs with an identical distribution
+    of masses as COSMOS
+    """
+
+    # set for speeding up finding location
+    subsample_indices=set()
+
+    # sort first to speed up future calculations
+    mock_galaxies.sort(order = 'stellar_mass')
+
+    # indices of nearest mock mass for each dwarf mass
+    indices = np.searchsorted(mock_galaxies['stellar_mass'], 10**dwarf_masses)
+
+    #add additional nearest
+    for index in indices:
+
+        matched_indices = find_nearest_new_indices_sorted(index, n_nearest, subsample_indices, len(mock_galaxies))
+
+        subsample_indices.update(matched_indices)
+
+    subsample = mock_galaxies[list(subsample_indices)]
+
+    return subsample
 
 
 ################################################################################
@@ -639,6 +714,3 @@ run_time = time.time() - time1
 print('Total time: {0} seconds; {1} minutes; {2} hours'.format(run_time, run_time/60, run_time/3600 ))
 
 ##############################################################################
-#TODO
-#add other 5 params
-#add proper catalog cuts to match COSMOS mass distribution

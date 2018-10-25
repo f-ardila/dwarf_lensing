@@ -34,6 +34,9 @@ mcmc_live_dangerously: True #for testing on smaller walker size
 cosmos_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/cosmos/'
 cosmos_catalog_reference : 'Laigle+2016'
 
+# dwarfs
+cosmos_dwarf_file: 'dwarf_sample_for_paper.fits'
+
 # SMF
 cosmos_SMF_fit_file: 'cosmos2015_dic2017_smf_z01-04_STY0.dat'
 cosmos_SMF_points_file: 'cosmos2015_dic2017_smf_z01-04_Vmax0_with_header.dat'
