@@ -1,6 +1,4 @@
 import numpy as np
-import pandas as pd
-import random
 from astropy.io import fits
 from scipy.stats import ks_2samp
 from halotools.sim_manager import HaloTableCache, CachedHaloCatalog
@@ -43,30 +41,44 @@ model.populate_mock(halocat)
 
 #create galaxy table limited to mass range of dwarfs
 mock_galaxies = model.mock.galaxy_table
-mock_galaxies = mock_galaxies['galid', 'x', 'y', 'z', 'stellar_mass']
-mock_galaxies = mock_galaxies[(np.log10(mock_galaxies['stellar_mass'])>=min(dwarf_masses)) & \
-                              (np.log10(mock_galaxies['stellar_mass'])<9.0)]
-#reduce size of table in half for memory purposes
-mock_galaxies = mock_galaxies[random.sample(np.arange(len(mock_galaxies)),500000)]
-
-
+mock_galaxies = mock_galaxies['x', 'y', 'z', 'stellar_mass']
+mock_galaxies = np.array(mock_galaxies[(np.log10(mock_galaxies['stellar_mass'])>=min(dwarf_masses)) & \
+                              (np.log10(mock_galaxies['stellar_mass'])<9.0)])
+#reduce size of table in half
+half_mock_galaxies = np.random.choice(mock_galaxies,500000)
 ################################################################################
-def find_nearest_rows_pandas(data_frame, value, n):
-
+def find_nearest_new_indices_sorted(index, n, existing_indices, length):
     """
-    data_frame: pandas DF from which we will find closest
-    value: closest to this value
+    index: index of closest value
     n: number of closest
+    existing_indices: indices that already exist to avoid repeats
 
     return:
-    all columns of data_frame indexed to rows with closest values
+    indices of n nearest rows
     """
 
-    nearest_rows = np.abs(np.log10(data_frame['stellar_mass']) - value).sort_values()[:n]
+    #indices of nearest rows
+    nearest_rows=[]
 
-    return data_frame.loc[nearest_rows.index]
+    #append index
+    i=0
+    if index not in existing_indices:
+            nearest_rows.append(index)
 
-def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galaxies, n_nearest = 1):
+    #append next nearest indices
+    while len(nearest_rows) < n:
+
+        if index + i not in existing_indices and index + i not in nearest_rows and index + i<length:
+            nearest_rows.append(index + i)
+
+        if len(nearest_rows) < n and index - i not in existing_indices and index - i not in nearest_rows and index - i>0:
+            nearest_rows.append(index - i)
+
+        i += 1
+
+    return nearest_rows
+
+def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galaxies, n_nearest):
     """
     dwarf_masses: masses of COSMOS dwarfs
     mock_galaxies: array of mock galaxies from halotools
@@ -74,35 +86,29 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
                sample full COSMOS dwarf catalog)
 
     return:
-    pandas DF containing the sample of mock dwarfs with an identical distribution
+    array of the sample of mock dwarfs with an identical distribution
     of masses as COSMOS
     """
-    subsample=[]
 
-    #convert to pandas DF. byte order error occurs if not converted in this way
-    mock_galaxies_pd = pd.DataFrame(mock_galaxies.as_array())
+    #set for speeding up finding location
+    subsample_indices=set()
 
-    for dwarf in dwarf_masses:
+    #sort first to speed up future calculations
+    mock_galaxies.sort(order = 'stellar_mass')
 
-        #reduce search space
-        gal_masses=np.log10(mock_galaxies_pd['stellar_mass'])
-        mock_galaxies_reduced = mock_galaxies_pd[(gal_masses<dwarf+0.001) & \
-                                                (gal_masses>dwarf-0.001)]
+    #indices of nearest mock mass for each dwarf mass
+    indices = np.searchsorted(mock_galaxies['stellar_mass'], 10**dwarf_masses)
 
+    #add additional nearest
+    for index in indices:
 
-        #find mock galaxies with mass closest to dwarf
-        matched_galaxies = find_nearest_rows_pandas(mock_galaxies_reduced,dwarf,
-                                                    n=n_nearest)
+        matched_indices = find_nearest_new_indices_sorted(index, n_loops, subsample_indices, len(mock_galaxies))
 
-        # append to subsample
-        subsample += [matched_galaxies]
+        subsample_indices.update(matched_indices)
 
-        # sample without replacement in array of mock galaxy masses
-        # faster to set to 0 than to delete or mask
-        mock_galaxies_pd['stellar_mass'].loc[matched_galaxies.index] = 0
+    subsample = mock_galaxies[list(subsample_indices)]
 
-    return pd.concat(subsample)
-
+    return subsample
 ################################################################################
 # run functions on catalogs
 
