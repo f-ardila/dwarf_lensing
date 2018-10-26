@@ -112,8 +112,14 @@ def setup_model(cfg, verbose=True):
     if cfg['model_type'] == 'scatter_only':
         # Number of parameters
         cfg['mcmc_ndims'] = 2
-        cfg['mcmc_labels'] = [r'$a$',
-                              r'$b$']
+        cfg['mcmc_param_labels'] = ['scatter_model_param1',
+                              'scatter_model_param2']
+
+        cfg['mcmc_0param_labels'] = ['smhm_m0_a',
+                              'smhm_m1_a',
+                              'smhm_beta_a',
+                              'smhm_delta_a',
+                              'smhm_gamma_a',]
 
     cfg['mcmc_burnin_file'] = os.path.join(
         cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin.npz')
@@ -185,15 +191,24 @@ def compute_SMF(model, config, nbins=100):
 
 def compute_deltaSigma(model, config, cosmos_data, sim_data):
 
+    n_nearest = 40
+
     # select subsample of dwarfs from galaxy catalog
     mock_galaxies = model.mock.galaxy_table
     mock_galaxies = mock_galaxies['x', 'y', 'z', 'stellar_mass']
     mock_galaxies = np.array(mock_galaxies[(np.log10(mock_galaxies['stellar_mass'])>=min(cosmos_data['cosmos_dwarf_masses'])) & \
                                   (np.log10(mock_galaxies['stellar_mass'])<9.0)])
     # half_mock_galaxies = np.random.choice(mock_galaxies,500000)
+    print('cut galaxies table', len(mock_galaxies))
+
+    #if mock catalog does not contain enough dwarfs, return 0 probability
+    if len(mock_galaxies) < len(cosmos_data['cosmos_dwarf_masses'])*(n_nearest*1.25):
+        print('Too few mock dwarfs!')
+        return 0, 0
+
     galaxies_table= create_dwarf_catalog_with_matched_mass_distribution(cosmos_data['cosmos_dwarf_masses'],
                                                                     mock_galaxies,
-                                                                    n_nearest = 50)
+                                                                    n_nearest = n_nearest)
 
     # read in galaxy positions
     x = galaxies_table['x']
@@ -271,9 +286,11 @@ def predict_model(param, config, obs_data, sim_data,
 
     # Predict SMFs
     smf_mass_bins, smf_log_phi = compute_SMF(sim_data['model'],config, nbins=100)
+    print('SMF computed')
 
     # Predict DeltaSigma profiles
     wl_r, wl_ds = compute_deltaSigma(sim_data['model'], config, obs_data, sim_data)
+    print('DS computed')
 
 
 #     if show_smf:
@@ -356,13 +373,14 @@ def flat_prior(param_tuple, param_low, param_upp):
     """Priors of parameters. Return -inf if all parameters are not within bounds."""
     if not np.all([low <= param <= upp for param, low, upp in
                    zip(list(param_tuple), param_low, param_upp)]):
+        print('All parameters not within bounds!')
         return -np.inf
 
     return 0.0
 
 def smf_lnlike(obs_smf_fit_table, obs_smf_points_table, sim_smf_mass_bins, sim_smf_log_phi):
     """Calculate the likelihood for SMF."""
-
+    print('smf_lnlike')
     # get same bins in simulations as in observations
     sim_smf_log_phi_interpolated = np.interp(obs_smf_points_table['logM'], sim_smf_mass_bins, sim_smf_log_phi)
 
@@ -388,6 +406,11 @@ def smf_lnlike(obs_smf_fit_table, obs_smf_points_table, sim_smf_mass_bins, sim_s
 
 def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds, cosmos_data):
     """Calculate the likelihood for WL profile."""
+    print('dsigma_lnlike')
+
+    #0 when number of dwarfs in mock is less than COSMOS dwarf catalog
+    if (sim_wl_r == 0) and (sim_wl_ds == 0):
+        return -np.inf
 
     # make sure same bins
     decimal_places_to_round_bins = 5
@@ -411,10 +434,12 @@ def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
     """Calculate the lnLikelihood of the model."""
     # Unpack the input parameters
     parameters = list(param_tuple)
+    print('lnlike')
 
     # Generate the model predictions
     sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = predict_model(parameters, config, obs_data, sim_data)
 
+    print('model_prediced')
     # Likelihood for SMFs.
     smf_lnlike_value = smf_lnlike(obs_data['cosmos_SMF_fit_table'], obs_data['cosmos_SMF_points_table'],
         sim_smf_mass_bins, sim_smf_log_phi)
@@ -442,7 +467,7 @@ def ln_prob_global(param_tuple, config, cosmos_data , sim_data):
     if not np.isfinite(lp):
         return -np.inf
 
-    print(lp + ln_like(param_tuple, config, cosmos_data, sim_data))
+
     return lp + ln_like(param_tuple, config, cosmos_data, sim_data)
 
 def mcmc_initial_guess(param_initial, param_sigma, n_walkers, n_dims):
@@ -668,9 +693,9 @@ def find_nearest_new_indices_sorted(index, n, existing_indices, length):
             nearest_rows.append(index - i)
 
         i += 1
-
+        # print('i = {0}'.format(i))
         #print every 500
-        if i%500==0 : print(i) 
+        # if i%500==0 : print('i = {0}'.format(i))
 
     return nearest_rows
 
@@ -708,3 +733,5 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
 
 
 ################################################################################
+#TODO
+# assert that distribution of masses mock vs COSMOS is the same
