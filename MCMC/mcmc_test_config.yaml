@@ -4,12 +4,28 @@ param_ini: [0.40, 0.20, 12.50, 10.90, 0.46, 0.57, 1.50]
 param_low: [0.00, 0.00, 10.00, 8.00, 0.00, 0.00, 0.00]
 param_upp: [1.00, 1.00, 14.00, 13.00, 1.00, 1.00, 3.00]
 param_sig: [0.10, 0.10, 0.30, 0.30, 0.10, 0.10, 0.10]
+param_labels: ['scatter_model_param1',
+               'scatter_model_param2',
+               'smhm_m0_0',
+               'smhm_m1_0',
+               'smhm_beta_0',
+               'smhm_delta_0',
+               'smhm_gamma_0']
+param_labels_latex: ['$\sigma_{1}$',
+                     '$\sigma_{2}$',
+                     '$\log_{10}(M_{\star, 0})$',
+                     '$\log_{10}(M_{1})$',
+                     '$\beta$',
+                     '$\delta$',
+                     '$\gamma$']
 
 # model_type: 'scatter_only'
 # param_ini: [0.4, 0.2]
 # param_low: [0.00, 0.00]
 # param_upp: [1.00, 1.00]
 # param_sig: [0.10, 0.10]
+# mcmc_param_labels: ['scatter_model_param1',
+#                     'scatter_model_param2']
 
 # MCMC Runs
 mcmc_out_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/outfiles/'
