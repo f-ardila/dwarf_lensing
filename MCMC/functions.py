@@ -10,7 +10,7 @@ import emcee
 print(emcee.__version__) #need version 3 (pip install emcee==3.0rc1)
 import yaml
 
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, ks_2samp
 
 from astropy.table import Table, Column
 from astropy.io import ascii, fits
@@ -209,6 +209,9 @@ def compute_deltaSigma(model, config, cosmos_data, sim_data):
     galaxies_table= create_dwarf_catalog_with_matched_mass_distribution(cosmos_data['cosmos_dwarf_masses'],
                                                                     mock_galaxies,
                                                                     n_nearest = n_nearest)
+
+    print(ks_2samp(np.log10(galaxies_table['stellar_mass']),cosmos_data['cosmos_dwarf_masses']))
+    assert ks_2samp(np.log10(galaxies_table['stellar_mass']),cosmos_data['cosmos_dwarf_masses'])[1] > 0.95
 
     # read in galaxy positions
     x = galaxies_table['x']
@@ -409,7 +412,7 @@ def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds, cosmos_data):
     print('dsigma_lnlike')
 
     #0 when number of dwarfs in mock is less than COSMOS dwarf catalog
-    if (sim_wl_r == 0) and (sim_wl_ds == 0):
+    if np.all(sim_wl_r == 0) and np.all(sim_wl_ds == 0):
         return -np.inf
 
     # make sure same bins
@@ -733,5 +736,3 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
 
 
 ################################################################################
-#TODO
-# assert that distribution of masses mock vs COSMOS is the same
