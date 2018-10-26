@@ -107,6 +107,7 @@ def load_sim_data(cfg):
 
 def setup_model(cfg, verbose=True):
     """Configure MCMC run and plots."""
+    print(cfg['model_type'])
 
     if cfg['model_type'] == 'scatter_only':
         # Number of parameters
@@ -182,7 +183,7 @@ def compute_SMF(model, config, nbins=100):
 
     return bin_centers, logPhi
 
-def compute_deltaSigma(model, config):
+def compute_deltaSigma(model, config, cosmos_data, sim_data):
 
     # select subsample of dwarfs from galaxy catalog
     mock_galaxies = model.mock.galaxy_table
@@ -272,7 +273,7 @@ def predict_model(param, config, obs_data, sim_data,
     smf_mass_bins, smf_log_phi = compute_SMF(sim_data['model'],config, nbins=100)
 
     # Predict DeltaSigma profiles
-    wl_r, wl_ds = compute_deltaSigma(sim_data['model'], config)
+    wl_r, wl_ds = compute_deltaSigma(sim_data['model'], config, obs_data, sim_data)
 
 
 #     if show_smf:
@@ -385,7 +386,7 @@ def smf_lnlike(obs_smf_fit_table, obs_smf_points_table, sim_smf_mass_bins, sim_s
 
     return smf_lnlike
 
-def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds):
+def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds, cosmos_data):
     """Calculate the likelihood for WL profile."""
 
     # make sure same bins
@@ -404,6 +405,7 @@ def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds):
     # print("DSigma likelihood / chi2: %f, %f" % (dsigma_lnlike, dsigma_chi2))
 
     return dsigma_lnlike
+
 def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
                  sep_return=False):
     """Calculate the lnLikelihood of the model."""
@@ -418,14 +420,14 @@ def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
         sim_smf_mass_bins, sim_smf_log_phi)
 
     # Likelihood for DeltaSigma
-    dsigma_lnlike_value = dsigma_lnlike(obs_data['cosmos_wl_table'], sim_wl_r, sim_wl_ds)
+    dsigma_lnlike_value = dsigma_lnlike(obs_data['cosmos_wl_table'], sim_wl_r, sim_wl_ds, obs_data)
 
     if not np.isfinite(smf_lnlike_value) or not np.isfinite(dsigma_lnlike_value):
         return -np.inf
 
     return smf_lnlike_value + config['mcmc_wl_weight'] * dsigma_lnlike_value
 
-def ln_prob_global(param_tuple):
+def ln_prob_global(param_tuple, config, cosmos_data , sim_data):
     """Probability function to sample in an MCMC.
 
     Parameters
@@ -542,7 +544,7 @@ def mcmc_save_results(mcmc_results, mcmc_sampler, mcmc_file,
     return
 
 #skip paralleization for now
-def emcee_fit(config, verbose=True):
+def emcee_fit(config, cosmos_data, sim_data, verbose=True):
 
     print('{0} thread(s)'.format(config['mcmc_nthreads']))
 
@@ -565,7 +567,8 @@ def emcee_fit(config, verbose=True):
                 config['mcmc_ndims'],
                 ln_prob_global,
                 moves=burnin_move,
-                pool=pool)
+                pool=pool,
+                args = [config, cosmos_data, sim_data])
 
             # Burn-in
             mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
@@ -591,7 +594,8 @@ def emcee_fit(config, verbose=True):
                 config['mcmc_ndims'],
                 ln_prob_global,
                 moves=mcmc_move,
-                pool=pool)
+                pool=pool,
+                args = [config, cosmos_data, sim_data])
 
             # MCMC run
             mcmc_run_result = emcee_run(
@@ -604,7 +608,8 @@ def emcee_fit(config, verbose=True):
         burnin_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers_burnin'],
                                                config['mcmc_ndims'],
                                                 ln_prob_global,
-                                                moves=burnin_move)
+                                                moves=burnin_move,
+                                                args = [config, cosmos_data, sim_data])
 
         # Burn-in
         mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
@@ -627,7 +632,8 @@ def emcee_fit(config, verbose=True):
         mcmc_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers'],
                                              config['mcmc_ndims'],
                                              ln_prob_global,
-                                             moves=mcmc_move)
+                                             moves=mcmc_move,
+                                             args = [config, cosmos_data, sim_data])
 
         mcmc_run_result = emcee_run(mcmc_sampler, mcmc_new_ini, config, verbose=True)
 
@@ -662,6 +668,9 @@ def find_nearest_new_indices_sorted(index, n, existing_indices, length):
             nearest_rows.append(index - i)
 
         i += 1
+
+        #print every 500
+        if i%500==0 : print(i) 
 
     return nearest_rows
 
@@ -699,18 +708,3 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
 
 
 ################################################################################
-import time
-
-time1 = time.time()
-config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
-global config, cosmos_data, sim_data
-
-# Load the data
-config, cosmos_data, sim_data = initial_model(config_initial)
-
-emcee_fit(config)
-
-run_time = time.time() - time1
-print('Total time: {0} seconds; {1} minutes; {2} hours'.format(run_time, run_time/60, run_time/3600 ))
-
-##############################################################################
