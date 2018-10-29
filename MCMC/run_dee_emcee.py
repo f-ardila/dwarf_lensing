@@ -1,10 +1,15 @@
 from functions import  *
+import sys
 
 if __name__ == '__main__':
 
     time1 = time.time()
 
-    config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
+    # if sys.argv[1] == 'test':
+    #     config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
+
+    config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_default_config.yaml')
+
     config, cosmos_data, sim_data = initial_model(config_initial)
 
     emcee_fit(config, cosmos_data, sim_data)
