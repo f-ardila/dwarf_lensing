@@ -1,14 +1,21 @@
 from functions import  *
-import sys
+import argparse
+
+#argument for testing
+parser = argparse.ArgumentParser()
+parser.add_argument("--test", action='store_true', help="Test config file")
+args = parser.parse_args()
 
 if __name__ == '__main__':
 
     time1 = time.time()
 
-    # if sys.argv[1] == 'test':
-    #     config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
+    #test
+    if args.test=='test':
+        config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
 
-    config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_default_config.yaml')
+    else:
+        config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_default_config.yaml')
 
     config, cosmos_data, sim_data = initial_model(config_initial)
 
