@@ -11,7 +11,7 @@ if __name__ == '__main__':
     time1 = time.time()
 
     #test
-    if args.test=='test':
+    if args.test:
         config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
         print('TEST')
 
