@@ -167,6 +167,7 @@ def compute_SMF(model, config, nbins=100):
 
     # Read stellar masses
     M = model.mock.galaxy_table['stellar_mass']
+    M = M[(M>1) & (M<np.inf)] #apparently some models produce galaxies with 0 mass and some with tiny mass and some with infinite mass
 
     # Take logarithm
     logM = np.log10(M)
@@ -211,7 +212,9 @@ def compute_deltaSigma(model, config, cosmos_data, sim_data):
                                                                     n_nearest = n_nearest)
 
     print(ks_2samp(np.log10(galaxies_table['stellar_mass']),cosmos_data['cosmos_dwarf_masses']))
-    assert ks_2samp(np.log10(galaxies_table['stellar_mass']),cosmos_data['cosmos_dwarf_masses'])[1] > 0.95
+    if ks_2samp(np.log10(galaxies_table['stellar_mass']),cosmos_data['cosmos_dwarf_masses'])[1] < 0.95:
+        print('Mock and COSMOS distributions don\'t match!')
+        return 0, 0
 
     # read in galaxy positions
     x = galaxies_table['x']
@@ -683,7 +686,7 @@ def find_nearest_new_indices_sorted(index, n, existing_indices, length):
 
     # append index
     i=0
-    if index not in existing_indices:
+    if index not in existing_indices and index <length:
             nearest_rows.append(index)
 
     #append next nearest indices
@@ -692,13 +695,10 @@ def find_nearest_new_indices_sorted(index, n, existing_indices, length):
         if index + i not in existing_indices and index + i not in nearest_rows and index + i<length:
             nearest_rows.append(index + i)
 
-        if len(nearest_rows) < n and index - i not in existing_indices and index - i not in nearest_rows and index - i>0:
+        if len(nearest_rows) < n and index - i not in existing_indices and index - i not in nearest_rows and index - i>0 and index - i<length:
             nearest_rows.append(index - i)
 
         i += 1
-        # print('i = {0}'.format(i))
-        #print every 500
-        # if i%500==0 : print('i = {0}'.format(i))
 
     return nearest_rows
 
