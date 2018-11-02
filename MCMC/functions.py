@@ -22,6 +22,11 @@ from halotools.empirical_models import PrebuiltSubhaloModelFactory
 from halotools.mock_observables import delta_sigma_from_precomputed_pairs, total_mass_enclosed_per_cylinder
 from halotools.utils import randomly_downsample_data
 
+#memory profile
+from guppy import hpy
+import datetime
+
+
 ################################################################################
 #FUNCTIONS
 ################################################################################
@@ -285,7 +290,8 @@ def predict_model(param, config, obs_data, sim_data,
             sim_data['model'].param_dict[model_param] = 0
 
         # populate mock
-        sim_data['model'].populate_mock(deepcopy(sim_data['halocat']))
+        # sim_data['model'].populate_mock(deepcopy(sim_data['halocat']))
+        sim_data['model'].populate_mock(sim_data['halocat'])
         print('populate_mock')
 
 
@@ -441,6 +447,9 @@ def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
     # Unpack the input parameters
     parameters = list(param_tuple)
     print('lnlike')
+    print(datetime.datetime.now())
+    h=hpy()
+    print(h.heap())
 
     # Generate the model predictions
     sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = predict_model(parameters, config, obs_data, sim_data)
