@@ -1,5 +1,6 @@
 from functions import  *
 import argparse
+# from memory_profiler import mprof
 
 #argument for testing
 parser = argparse.ArgumentParser()
@@ -24,6 +25,3 @@ if __name__ == '__main__':
 
     run_time = time.time() - time1
     print('Total time: {0} seconds; {1} minutes; {2} hours'.format(run_time, run_time/60., run_time/3600. ))
-
-
-# global variables not defined in functions.py
