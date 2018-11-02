@@ -2,7 +2,7 @@
 model_type: '5SHMR+scatter'
 param_ini: [0.40, 0.20, 12.50, 10.90, 0.46, 0.57, 1.50]
 param_low: [0.00, 0.00, 10.00, 8.00, 0.00, 0.00, 0.00]
-param_upp: [1.00, 1.00, 14.00, 13.00, 1.00, 1.00, 3.00]
+param_upp: [1.00, 1.00, 14.00, 13.00, 1.00, 0.90, 3.00]
 param_sig: [0.10, 0.10, 0.10, 0.10, 0.05, 0.05, 0.05]
 param_labels: ['scatter_model_param1',
                'scatter_model_param2',
