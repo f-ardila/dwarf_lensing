@@ -2,10 +2,10 @@ config: 2
 
 # Model parameters
 model_type: '5SHMR+scatter'
-param_ini: [0.40, 0.20, 12.50, 10.90, 0.46, 0.57, 1.50]
+param_ini: [0.40, 0.20, 12.50, 12.0, 0.24, 0.57, 0.50]
 param_low: [0.00, 0.00, 10.00, 8.00, 0.00, 0.00, 0.00]
 param_upp: [1.00, 1.00, 14.00, 13.00, 1.00, 0.90, 3.00]
-param_sig: [0.10, 0.10, 0.10, 0.10, 0.05, 0.05, 0.05]
+param_sig: [0.50, 0.50, 1.00, 0.50, 0.2, 0.4, 2.0]
 param_labels: ['scatter_model_param1',
                'scatter_model_param2',
                'smhm_m0_0',
@@ -32,11 +32,11 @@ param_labels_latex: ['$\sigma_{1}$',
 # MCMC Runs
 mcmc_out_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
-mcmc_nsamples: 128
 mcmc_nthreads: 1
-mcmc_nburnin: 128
-mcmc_nwalkers_burnin: 15
-mcmc_nwalkers: 15
+mcmc_nburnin: 32
+mcmc_nwalkers_burnin: 20
+mcmc_nsamples: 256
+mcmc_nwalkers: 10
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
