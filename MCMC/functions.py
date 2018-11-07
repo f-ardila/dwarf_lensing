@@ -726,8 +726,10 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
     # set for speeding up finding location
     subsample_indices=set()
 
+    # for debugging
+    # import pdb;  pdb.set_trace()  
     # sort first to speed up future calculations
-    mock_galaxies.sort(order = 'stellar_mass')
+    mock_galaxies.sort(order = str('stellar_mass')) 
 
     # indices of nearest mock mass for each dwarf mass
     indices = np.searchsorted(mock_galaxies['stellar_mass'], 10**dwarf_masses)
