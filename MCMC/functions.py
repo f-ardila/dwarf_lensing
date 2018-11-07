@@ -127,9 +127,9 @@ def setup_model(cfg, verbose=True):
                               'smhm_gamma_a',]
 
     cfg['mcmc_burnin_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin.npz')
+        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin_{0}.npz'.format(str(cfg['config'])))
     cfg['mcmc_run_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run.npz')
+        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run_{0}.npz'.format(str(cfg['config'])))
 
     if cfg['model_type'] == '5SHMR+scatter':
         # Number of parameters
@@ -149,9 +149,9 @@ def setup_model(cfg, verbose=True):
                               'smhm_gamma_a',]
 
     cfg['mcmc_burnin_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin.npz')
+        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin_{0}.npz'.format(str(cfg['config'])))
     cfg['mcmc_run_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run.npz')
+        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run_{0}.npz'.format(str(cfg['config'])))
 
     return cfg
 
