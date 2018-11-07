@@ -447,9 +447,9 @@ def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
     # Unpack the input parameters
     parameters = list(param_tuple)
     print('lnlike')
-    print(datetime.datetime.now())
-    h=hpy()
-    print(h.heap())
+    # print(datetime.datetime.now())
+    # h=hpy()
+    # print(h.heap())
 
     # Generate the model predictions
     sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = predict_model(parameters, config, obs_data, sim_data)
@@ -727,9 +727,9 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
     subsample_indices=set()
 
     # for debugging
-    # import pdb;  pdb.set_trace()  
+    # import pdb;  pdb.set_trace()
     # sort first to speed up future calculations
-    mock_galaxies.sort(order = str('stellar_mass')) 
+    mock_galaxies.sort(order = str('stellar_mass'))
 
     # indices of nearest mock mass for each dwarf mass
     indices = np.searchsorted(mock_galaxies['stellar_mass'], 10**dwarf_masses)
