@@ -42,18 +42,18 @@ def load_observed_data(cfg, verbose=True):
     """Load the observed data."""
 
     #dwarf masses
-    cosmos_dwarf_sample_data  = fits.open(os.path.join(cfg['cosmos_dir'],
+    cosmos_dwarf_sample_data  = fits.open(os.path.join(cfg['data_location'], cfg['cosmos_dir'],
                                        cfg['cosmos_dwarf_file']))[1].data
     cosmos_dwarf_masses = cosmos_dwarf_sample_data['mass_med']
 
     #SMF
-    cosmos_SMF_fit_table = ascii.read(os.path.join(cfg['cosmos_dir'],
+    cosmos_SMF_fit_table = ascii.read(os.path.join(cfg['data_location'], cfg['cosmos_dir'],
                                        cfg['cosmos_SMF_fit_file']))
-    cosmos_SMF_points_table = ascii.read(os.path.join(cfg['cosmos_dir'],
+    cosmos_SMF_points_table = ascii.read(os.path.join(cfg['data_location'], cfg['cosmos_dir'],
                                        cfg['cosmos_SMF_points_file']))
 
     #weak lensing
-    cosmos_lensing_table = ascii.read(os.path.join(cfg['cosmos_dir'], cfg['cosmos_wl_file']))
+    cosmos_lensing_table = ascii.read(os.path.join(cfg['data_location'], cfg['cosmos_dir'], cfg['cosmos_wl_file']))
 
     cosmos_wl_r = cosmos_lensing_table['R(Mpc)']
     cosmos_wl_ds = cosmos_lensing_table['SigR(Msun/pc^2)']
@@ -81,7 +81,7 @@ def load_sim_data(cfg):
                                 ptcl_version_name=cfg['sim_ptcl_version_name']) # doctest: +SKIP
 
     #read in particle table
-    ptcl_table = Table.read(os.path.join(cfg['sim_dir'], cfg['sim_particle_file']), path='data')
+    ptcl_table = Table.read(os.path.join(cfg['data_location'], cfg['sim_dir'], cfg['sim_particle_file']), path='data')
     px = ptcl_table['x']
     py = ptcl_table['y']
     pz = ptcl_table['z']
@@ -745,5 +745,9 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
 
     return subsample
 
+def GM_data_location(config):
+    config['data_location'] = '/data/ateam/fardila/dwarf_lensing/'
+
+    return config
 
 ################################################################################
