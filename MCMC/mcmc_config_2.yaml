@@ -34,9 +34,9 @@ mcmc_out_dir: 'MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
 mcmc_nthreads: 1
 mcmc_nburnin: 64
-mcmc_nwalkers_burnin: 10
+mcmc_nwalkers_burnin: 20
 mcmc_nsamples: 256
-mcmc_nwalkers: 10
+mcmc_nwalkers: 20
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
