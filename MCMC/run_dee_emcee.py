@@ -5,19 +5,30 @@ import argparse
 #argument for testing
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", action='store_true', help="Test config file")
+parser.add_argument("--GM", action='store_true', help="Check if running on Graymalkin")
 args = parser.parse_args()
 
 if __name__ == '__main__':
 
     time1 = time.time()
 
+    #check directory is dwarf_lensing
+    assert os.path.basename(os.getcwd()) == 'dwarf_lensing', 'Need to run in `dwarf_lensing` directory!'
+
     #test
     if args.test:
-        config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_test_config.yaml')
+        config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_config_test.yaml')
         print('TEST')
 
     else:
-        config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_default_config.yaml')
+        config_initial = parse_config('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/mcmc_config_2.yaml')
+
+    #check if running on graymalkin
+    if args.GM:
+        print('RUNNING ON GRAYMALKIN')
+        config_initial = GM_data_location(config_initial)
+    else:
+        print('NOT RUNNING ON GRAYMALKIN')
 
     config, cosmos_data, sim_data = initial_model(config_initial)
 
