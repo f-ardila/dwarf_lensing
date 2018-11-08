@@ -33,8 +33,8 @@ param_labels_latex: ['$\sigma_{1}$',
 mcmc_out_dir: 'MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
 mcmc_nthreads: 1
-mcmc_nburnin: 32
-mcmc_nwalkers_burnin: 20
+mcmc_nburnin: 64
+mcmc_nwalkers_burnin: 10
 mcmc_nsamples: 256
 mcmc_nwalkers: 10
 mcmc_smf_only: False
