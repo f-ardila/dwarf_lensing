@@ -1,3 +1,5 @@
+config: 'test'
+
 # Model parameters
 model_type: '5SHMR+scatter'
 param_ini: [0.40, 0.20, 12.50, 10.90, 0.46, 0.57, 1.50]
@@ -28,7 +30,7 @@ param_labels_latex: ['$\sigma_{1}$',
 #                     'scatter_model_param2']
 
 # MCMC Runs
-mcmc_out_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/outfiles/'
+mcmc_out_dir: 'MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
 mcmc_nsamples: 2
 mcmc_nthreads: 1
@@ -46,8 +48,11 @@ mcmc_live_dangerously: True #for testing on smaller walker size
 
 
 #############################################################################
+#DATA
+data_location: '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/'
+
 # COSMOS
-cosmos_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/cosmos/'
+cosmos_dir: 'cosmos/'
 cosmos_catalog_reference : 'Laigle+2016'
 
 # dwarfs
@@ -73,7 +78,7 @@ cosmos_omega_m: 0.3
 
 #############################################################################
 # Simulation
-sim_dir: '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/bplanck/'
+sim_dir: 'bplanck/'
 
 sim_name : 'bolshoi-planck'
 sim_halo_finder : 'rockstar'
