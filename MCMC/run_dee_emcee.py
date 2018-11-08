@@ -17,11 +17,14 @@ if __name__ == '__main__':
 
     #test
     if args.test:
-        config_initial = parse_config('MCMC/mcmc_config_test.yaml')
         print('TEST')
+        config_file = 'MCMC/mcmc_config_test.yaml'
 
     else:
-        config_initial = parse_config('MCMC/mcmc_config_2.yaml')
+        config_file = 'MCMC/mcmc_config_2.yaml'
+
+    print(config_file)
+    config_initial = parse_config(config_file)
 
     #check if running on graymalkin
     if args.GM:
