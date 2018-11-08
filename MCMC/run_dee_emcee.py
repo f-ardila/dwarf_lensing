@@ -21,7 +21,7 @@ if __name__ == '__main__':
         config_file = 'MCMC/mcmc_config_test.yaml'
 
     else:
-        config_file = 'MCMC/mcmc_config_2.yaml'
+        config_file = 'MCMC/mcmc_config_3.yaml'
 
     print(config_file)
     config_initial = parse_config(config_file)
