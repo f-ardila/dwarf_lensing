@@ -3,8 +3,8 @@ config: 4
 # Model parameters
 model_type: '5SHMR+scatter'
 param_ini: [0.40, 0.20, 12.52, 10.916, 0.457, 0.566, 1.53] #Leauthaud 2012
-param_low: [0.0, 0.0, 12.15, 10.716, 0.367, -0.294, -0.27 ] #ten sigma up
-param_upp: [1.0, 1.0, 12.89, 11.116, 0.547, 0.9, 3.33] #ten sigma down
+param_low: [0.0, 0.0, 12.15, 10.716, 0.367, 0.0, -0.27 ] #ten sigma up (delta fixed at 0.0)
+param_upp: [1.0, 1.0, 12.89, 11.116, 0.547, 0.9, 3.33] #ten sigma down (delta fixed at 0.9)
 param_sig: [0.1, 0.1, 0.03, 0.02, 0.01, 0.01, 0.2 ] #one sigma
 
 
