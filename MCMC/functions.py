@@ -28,7 +28,7 @@ import datetime
 
 
 ################################################################################
-#FUNCTIONS
+#Configuration
 ################################################################################
 def parse_config(config_file):
     """Prepare configurations.
@@ -103,60 +103,15 @@ def load_sim_data(cfg):
 #         print("# The volume of the UniverseMachine mock is %15.2f Mpc^3" %
 #               cfg['um_volume'])
 
-#     return {'um_mock': um_mock_use[mask_mass],
-#             'um_mass_encl': um_mass_encl[mask_mass, :],
-#             'mask_central': mask_central[mask_mass]}
-
     return {'halocat' : halocat, 'particles' : particles,
             'particle_masses' : particle_masses, 'downsampling_factor' : downsampling_factor}, cfg
 
-def setup_model(cfg, verbose=True):
-    """Configure MCMC run and plots."""
-    print(cfg['model_type'])
-
-    if cfg['model_type'] == 'scatter_only':
-        # Number of parameters
-        cfg['mcmc_ndims'] = 2
-        cfg['mcmc_param_labels'] = ['scatter_model_param1',
-                              'scatter_model_param2']
-
-        cfg['mcmc_0param_labels'] = ['smhm_m0_a',
-                              'smhm_m1_a',
-                              'smhm_beta_a',
-                              'smhm_delta_a',
-                              'smhm_gamma_a',]
-
-    cfg['mcmc_burnin_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin_{0}.npz'.format(str(cfg['config'])))
-    cfg['mcmc_run_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run_{0}.npz'.format(str(cfg['config'])))
-
-    if cfg['model_type'] == '5SHMR+scatter':
-        # Number of parameters
-        cfg['mcmc_ndims'] = 7
-        cfg['mcmc_param_labels'] = ['scatter_model_param1',
-                              'scatter_model_param2',
-                              'smhm_m0_0',
-                              'smhm_m1_0',
-                              'smhm_beta_0',
-                              'smhm_delta_0',
-                              'smhm_gamma_0']
-
-        cfg['mcmc_0param_labels'] = ['smhm_m0_a',
-                              'smhm_m1_a',
-                              'smhm_beta_a',
-                              'smhm_delta_a',
-                              'smhm_gamma_a',]
-
-    cfg['mcmc_burnin_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_burnin_{0}.npz'.format(str(cfg['config'])))
-    cfg['mcmc_run_file'] = os.path.join(
-        cfg['mcmc_out_dir'], cfg['mcmc_prefix'] + '_run_{0}.npz'.format(str(cfg['config'])))
-
-    return cfg
 
 def initial_model(config, verbose=True):
     """Initialize the model."""
+
+    print(cfg['model_type'])
+
     # Configuration for COSMOS data
     data_obs, config_obs = load_observed_data(config, verbose=verbose)
 
@@ -164,15 +119,23 @@ def initial_model(config, verbose=True):
     data_sim, config_obs_sim = load_sim_data(config_obs)
 
     #setup model
-    config_all = setup_model(config_obs_sim, verbose=verbose)
+    config_obs_sim['mcmc_burnin_file'] = os.path.join(
+        config_obs_sim['mcmc_out_dir'], config_obs_sim['mcmc_prefix'] + '_burnin_{0}.npz'.format(str(config_obs_sim['config'])))
+    config_obs_sim['mcmc_run_file'] = os.path.join(
+        config_obs_sim['mcmc_out_dir'], config_obs_sim['mcmc_prefix'] + '_run_{0}.npz'.format(str(config_obs_sim['config'])))
 
-    return config_all, data_obs, data_sim
 
+    return config_obs_sim, data_obs, data_sim
+
+################################################################################
+# Measurements
+################################################################################
 def compute_SMF(model, config, nbins=100):
 
     # Read stellar masses
     M = model.mock.galaxy_table['stellar_mass']
-    M = M[(M>1) & (M<np.inf)] #apparently some models produce galaxies with 0 mass and some with tiny mass and some with infinite mass
+    print('new')
+    #M = M[(M>1) & (M<np.inf)] #apparently some models produce galaxies with 0 mass and some with tiny mass and some with infinite mass
 
     # Take logarithm
     logM = np.log10(M)
@@ -267,11 +230,11 @@ def predict_model(param, config, obs_data, sim_data,
 
     # build_model and populate mock
     if 'model' in sim_data: # save memory if model already exists
-        for i, model_param in enumerate(config['mcmc_param_labels']):
+        for i, model_param in enumerate(config['param_labels']):
             sim_data['model'].param_dict[model_param] = param[i]
 
         # set redshift dependence to 0
-        for i, model_param in enumerate(config['mcmc_0param_labels']):
+        for i, model_param in enumerate(config['redshift_param_labels']):
             sim_data['model'].param_dict[model_param] = 0
 
         sim_data['model'].mock.populate()
@@ -282,11 +245,11 @@ def predict_model(param, config, obs_data, sim_data,
                                         scatter_abscissa=[12, 15],
                                         scatter_ordinates=[param[0], param[1]])
 
-        for i, model_param in enumerate(config['mcmc_param_labels']):
+        for i, model_param in enumerate(config['param_labels']):
             sim_data['model'].param_dict[model_param] = param[i]
 
         # set redshift dependence to 0
-        for i, model_param in enumerate(config['mcmc_0param_labels']):
+        for i, model_param in enumerate(config['redshift_param_labels']):
             sim_data['model'].param_dict[model_param] = 0
 
         # populate mock
@@ -294,7 +257,7 @@ def predict_model(param, config, obs_data, sim_data,
         sim_data['model'].populate_mock(sim_data['halocat'])
         print('populate_mock')
 
-
+    print sim_data['model'].param_dict
 
     # Predict SMFs
     smf_mass_bins, smf_log_phi = compute_SMF(sim_data['model'],config, nbins=100)
@@ -331,7 +294,9 @@ def predict_model(param, config, obs_data, sim_data,
 
     return smf_mass_bins, smf_log_phi, wl_r, wl_ds
 
-# plotting
+################################################################################
+# Plotting
+################################################################################
 def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_fit_table):
 
     # plot sim
@@ -362,7 +327,7 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
 
     #plot sim
     ax.plot(sim_r, sim_ds, label=r'Bol-Planck: ', linestyle='--', zorder=3, marker='o')
-    ax.fill_between(sim_r, sim_ds,sim_ds, alpha=0.5)
+    # ax.fill_between(sim_r, sim_ds,sim_ds, alpha=0.5)
 
     #plot observations
     ax.errorbar(observed_signal_table['R(Mpc)'], observed_signal_table['SigR(Msun/pc^2)'],
@@ -381,6 +346,14 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
     # plt.title('Matched Mass distribution')
     plt.show()
 
+def plot_from_params(params, config, cosmos_data, sim_data):
+    smf_mass_bins, smf_log_phi, wl_r, wl_ds = predict_model(params, config, cosmos_data, sim_data)
+    plot_SMF(smf_mass_bins, smf_log_phi, cosmos_data['cosmos_SMF_points_table'], cosmos_data['cosmos_SMF_fit_table'])
+    plot_deltaSigma(cosmos_data['cosmos_wl_table'], wl_r, wl_ds)
+
+################################################################################
+# Probability functions
+################################################################################
 def flat_prior(param_tuple, param_low, param_upp):
     """Priors of parameters. Return -inf if all parameters are not within bounds."""
     if not np.all([low <= param <= upp for param, low, upp in
@@ -485,6 +458,9 @@ def ln_prob_global(param_tuple, config, cosmos_data , sim_data):
 
     return lp + ln_like(param_tuple, config, cosmos_data, sim_data)
 
+################################################################################
+# MCMC functions
+################################################################################
 def mcmc_initial_guess(param_initial, param_sigma, n_walkers, n_dims):
     """Initialize guesses for the MCMC run. One guess for each dimension (model parameter) per walker,
     with a small sigma deviation from param_initial. """
@@ -679,6 +655,9 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True):
 
     return mcmc_run_result
 
+################################################################################
+# Helper functions
+################################################################################
 ## matching dwarf catalog with mock functions
 def find_nearest_new_indices_sorted(index, n, existing_indices, length):
     """
@@ -746,6 +725,9 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
     return subsample
 
 def GM_data_location(config):
+    '''
+    Defines data location in GRAYMALKIN
+    '''
     config['data_location'] = '/data/ateam/fardila/dwarf_lensing/'
 
     return config
