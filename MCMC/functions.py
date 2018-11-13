@@ -110,7 +110,7 @@ def load_sim_data(cfg):
 def initial_model(config, verbose=True):
     """Initialize the model."""
 
-    print(cfg['model_type'])
+    print(config['model_type'])
 
     # Configuration for COSMOS data
     data_obs, config_obs = load_observed_data(config, verbose=verbose)
@@ -257,7 +257,7 @@ def predict_model(param, config, obs_data, sim_data,
         sim_data['model'].populate_mock(sim_data['halocat'])
         print('populate_mock')
 
-    print sim_data['model'].param_dict
+    print(sim_data['model'].param_dict())
 
     # Predict SMFs
     smf_mass_bins, smf_log_phi = compute_SMF(sim_data['model'],config, nbins=100)
