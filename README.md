@@ -1,4 +1,5 @@
 # dwarf_lensing
 
-run with printing in realtime (unbuffered) and piping to log file
-`python -u MCMC/run_dee_emcee.py --test --GM |& tee MCMC/logs/run2.log`
+run with printing in realtime (unbuffered) piping to log file and allow for disconnecting from graymalkin:
+
+`nohup python -u MCMC/run_dee_emcee.py --config 4 --GM > MCMC/logs/run4.log &`
