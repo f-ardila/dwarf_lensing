@@ -5,6 +5,7 @@ import argparse
 #argument for testing
 parser = argparse.ArgumentParser()
 parser.add_argument("--test", action='store_true', help="Test config file")
+parser.add_argument("-config", type=str, help="which config file to use")
 parser.add_argument("--GM", action='store_true', help="Check if running on Graymalkin")
 args = parser.parse_args()
 
@@ -21,7 +22,7 @@ if __name__ == '__main__':
         config_file = 'MCMC/mcmc_config_test.yaml'
 
     else:
-        config_file = 'MCMC/mcmc_config_3.yaml'
+        config_file = 'MCMC/mcmc_config_{0}.yaml'.format(args.config)
 
     print(config_file)
     config_initial = parse_config(config_file)
