@@ -204,8 +204,7 @@ def compute_deltaSigma(model, config, cosmos_data, sim_data):
 
 
 def predict_model(param, config, obs_data, sim_data,
-                       constant_bin=False, return_all=False,
-                       show_smf=False, show_dsigma=False):
+                  smf_only=False, ds_only=False):
     """Return all model predictions.
     Parameters
     ----------
@@ -261,10 +260,14 @@ def predict_model(param, config, obs_data, sim_data,
     # Predict SMFs
     smf_mass_bins, smf_log_phi = compute_SMF(sim_data['model'],config, nbins=100)
     print('SMF computed')
+    if smf_only:
+        return smf_mass_bins, smf_log_phi, None, None
 
     # Predict DeltaSigma profiles
     wl_r, wl_ds = compute_deltaSigma(sim_data['model'], config, obs_data, sim_data)
     print('DS computed')
+    if ds_only:
+        return None, None, wl_r, wl_ds
 
 
 #     if show_smf:
@@ -378,7 +381,7 @@ def smf_lnlike(obs_smf_points_table, sim_smf_mass_bins, sim_smf_log_phi):
 
     # chi2
     smf_chi2 = (smf_diff ** 2 / smf_var).sum()
-    
+
 
     # likelihood
     smf_lnlike = -0.5 * (smf_chi2 + np.log(2 * np.pi * smf_var).sum())
@@ -405,11 +408,12 @@ def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds, cosmos_data):
 
     dsigma_obs = obs_wl_table['SigR(Msun/pc^2)']
     dsigma_obs_err = obs_wl_table['err(weights)']
-
     dsigma_var = (dsigma_obs_err ** 2)
+
     dsigma_diff = (dsigma_obs - sim_wl_ds) ** 2
 
     dsigma_chi2 = (dsigma_diff / dsigma_var).sum()
+
     dsigma_lnlike = -0.5 * (dsigma_chi2 + np.log(2 * np.pi * dsigma_var).sum())
     # print("DSigma likelihood / chi2: %f, %f" % (dsigma_lnlike, dsigma_chi2))
 
@@ -426,7 +430,8 @@ def ln_like(param_tuple, config, obs_data, sim_data,
     # print(h.heap())
 
     # Generate the model predictions
-    sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = predict_model(parameters, config, obs_data, sim_data)
+    sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = predict_model(parameters, config, obs_data, sim_data,
+                                                                            smf_only, ds_only)
 
     print('model predicted')
     # Likelihood for SMFs.
@@ -570,7 +575,8 @@ def mcmc_save_results(mcmc_results, mcmc_sampler, mcmc_file,
     return
 
 #skip paralleization for now
-def emcee_fit(config, cosmos_data, sim_data, verbose=True):
+def emcee_fit(config, cosmos_data, sim_data, verbose=True,
+              smf_only=False, ds_only=False):
 
     print('{0} thread(s)'.format(config['mcmc_nthreads']))
 
@@ -635,7 +641,8 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True):
                                                config['mcmc_ndims'],
                                                 ln_prob_global,
                                                 moves=burnin_move,
-                                                args = [config, cosmos_data, sim_data])
+                                                args = [config, cosmos_data, sim_data,
+                                                            smf_only, ds_only])
 
         # Burn-in
         mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
@@ -659,7 +666,8 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True):
                                              config['mcmc_ndims'],
                                              ln_prob_global,
                                              moves=mcmc_move,
-                                             args = [config, cosmos_data, sim_data])
+                                             args = [config, cosmos_data, sim_data,
+                                                         smf_only, ds_only])
 
         mcmc_run_result = emcee_run(mcmc_sampler, mcmc_new_ini, config, verbose=True)
 

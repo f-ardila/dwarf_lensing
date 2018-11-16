@@ -7,6 +7,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--test", action='store_true', help="Test config file")
 parser.add_argument("-config", type=str, help="which config file to use")
 parser.add_argument("--GM", action='store_true', help="Check if running on Graymalkin")
+parser.add_argument("--smf_only", action='store_true', help="only use SMF likelihood")
+parser.add_argument("--ds_only", action='store_true', help="only use DS likelihood")
+
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -36,7 +39,7 @@ if __name__ == '__main__':
 
     config, cosmos_data, sim_data = initial_model(config_initial)
 
-    emcee_fit(config, cosmos_data, sim_data)
+    emcee_fit(config, cosmos_data, sim_data, smf_only=args.smf_only, ds_only=args.ds_only)
 
     run_time = time.time() - time1
     print('Total time: {0} seconds; {1} minutes; {2} hours'.format(run_time, run_time/60., run_time/3600. ))
