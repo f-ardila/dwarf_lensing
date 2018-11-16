@@ -134,7 +134,6 @@ def compute_SMF(model, config, nbins=100):
 
     # Read stellar masses
     M = model.mock.galaxy_table['stellar_mass']
-    print('new')
     #M = M[(M>1) & (M<np.inf)] #apparently some models produce galaxies with 0 mass and some with tiny mass and some with infinite mass
 
     # Take logarithm
@@ -363,7 +362,7 @@ def flat_prior(param_tuple, param_low, param_upp):
 
     return 0.0
 
-def smf_lnlike(obs_smf_fit_table, obs_smf_points_table, sim_smf_mass_bins, sim_smf_log_phi):
+def smf_lnlike(obs_smf_points_table, sim_smf_mass_bins, sim_smf_log_phi):
     """Calculate the likelihood for SMF."""
     print('smf_lnlike')
     # get same bins in simulations as in observations
@@ -373,11 +372,13 @@ def smf_lnlike(obs_smf_fit_table, obs_smf_points_table, sim_smf_mass_bins, sim_s
     smf_diff = (np.array(sim_smf_log_phi_interpolated) - np.array(obs_smf_points_table['Phi']))
 
     # variance
-    obs_mean_smf_error = np.mean([obs_smf_points_table['Phi_err+'] , obs_smf_points_table['Phi_err-'] ])
+    obs_mean_smf_error = np.mean([obs_smf_points_table['Phi_err+'], obs_smf_points_table['Phi_err-'] ], axis=0)
     smf_var = np.array(obs_mean_smf_error ** 2)
+
 
     # chi2
     smf_chi2 = (smf_diff ** 2 / smf_var).sum()
+    
 
     # likelihood
     smf_lnlike = -0.5 * (smf_chi2 + np.log(2 * np.pi * smf_var).sum())
@@ -414,8 +415,8 @@ def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds, cosmos_data):
 
     return dsigma_lnlike
 
-def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
-                 sep_return=False):
+def ln_like(param_tuple, config, obs_data, sim_data,
+            smf_only=False, ds_only=False):
     """Calculate the lnLikelihood of the model."""
     # Unpack the input parameters
     parameters = list(param_tuple)
@@ -427,20 +428,27 @@ def ln_like(param_tuple, config, obs_data, sim_data, chi2=False,
     # Generate the model predictions
     sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = predict_model(parameters, config, obs_data, sim_data)
 
-    print('model_prediced')
+    print('model predicted')
     # Likelihood for SMFs.
-    smf_lnlike_value = smf_lnlike(obs_data['cosmos_SMF_fit_table'], obs_data['cosmos_SMF_points_table'],
-        sim_smf_mass_bins, sim_smf_log_phi)
+    smf_lnlike_value = smf_lnlike(obs_data['cosmos_SMF_points_table'],
+                                    sim_smf_mass_bins, sim_smf_log_phi)
+    if smf_only:
+        print('SMF ONLY')
+        return smf_lnlike_value
 
     # Likelihood for DeltaSigma
     dsigma_lnlike_value = dsigma_lnlike(obs_data['cosmos_wl_table'], sim_wl_r, sim_wl_ds, obs_data)
+    if ds_only:
+        print('DS ONLY')
+        return dsigma_lnlike_value
 
     if not np.isfinite(smf_lnlike_value) or not np.isfinite(dsigma_lnlike_value):
         return -np.inf
 
     return smf_lnlike_value + config['mcmc_wl_weight'] * dsigma_lnlike_value
 
-def ln_prob_global(param_tuple, config, cosmos_data , sim_data):
+def ln_prob_global(param_tuple, config, cosmos_data, sim_data,
+            smf_only=False, ds_only=False):
     """Probability function to sample in an MCMC.
 
     Parameters
@@ -455,8 +463,10 @@ def ln_prob_global(param_tuple, config, cosmos_data , sim_data):
     if not np.isfinite(lp):
         return -np.inf
 
+    l_like = ln_like(param_tuple, config, cosmos_data, sim_data, smf_only, ds_only)
+    print(l_like)
 
-    return lp + ln_like(param_tuple, config, cosmos_data, sim_data)
+    return lp + l_like
 
 ################################################################################
 # MCMC functions
