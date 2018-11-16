@@ -53,7 +53,7 @@ mcmc_nwalkers: 2
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
-mcmc_ndims: 2
+mcmc_ndims: 7
 mcmc_moves_burnin: 'stretch'
 mcmc_moves: 'stretch'
 mcmc_stretch_a: 2.0
