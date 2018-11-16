@@ -369,19 +369,20 @@ def smf_lnlike(obs_smf_points_table, sim_smf_mass_bins, sim_smf_log_phi):
     """Calculate the likelihood for SMF."""
     print('smf_lnlike')
     # get same bins in simulations as in observations
-    sim_smf_log_phi_interpolated = np.interp(obs_smf_points_table['logM'], sim_smf_mass_bins, sim_smf_log_phi)
+    non_inf_mask=~np.isinf(sim_smf_log_phi) #remove any infinities
+    sim_smf_log_phi_interpolated = np.interp(obs_smf_points_table['logM'],
+                                            sim_smf_mass_bins[non_inf_mask],
+                                             sim_smf_log_phi[non_inf_mask])
 
     # difference
     smf_diff = (np.array(sim_smf_log_phi_interpolated) - np.array(obs_smf_points_table['Phi']))
 
     # variance
-    obs_mean_smf_error = np.mean([obs_smf_points_table['Phi_err+'], obs_smf_points_table['Phi_err-'] ], axis=0)
+    obs_mean_smf_error = np.nanmean([obs_smf_points_table['Phi_err+'], obs_smf_points_table['Phi_err-'] ], axis=0)
     smf_var = np.array(obs_mean_smf_error ** 2)
-
 
     # chi2
     smf_chi2 = (smf_diff ** 2 / smf_var).sum()
-
 
     # likelihood
     smf_lnlike = -0.5 * (smf_chi2 + np.log(2 * np.pi * smf_var).sum())
