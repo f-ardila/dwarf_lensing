@@ -159,7 +159,8 @@ def compute_SMF(model, config, nbins=100):
 
 def compute_deltaSigma(model, config, cosmos_data, sim_data):
 
-    n_nearest = 40
+    # n_nearest = 40
+    n_nearest = 90
 
     # select subsample of dwarfs from galaxy catalog
     mock_galaxies = model.mock.galaxy_table
