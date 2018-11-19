@@ -2,9 +2,10 @@ from functions import  *
 import argparse
 # from memory_profiler import mprof
 
+
 #argument for testing
 parser = argparse.ArgumentParser()
-parser.add_argument("--test", action='store_true', help="Test config file")
+# parser.add_argument("--test", action='store_true', help="Test config file")
 parser.add_argument("-config", type=str, help="which config file to use")
 parser.add_argument("--GM", action='store_true', help="Check if running on Graymalkin")
 parser.add_argument("--smf_only", action='store_true', help="only use SMF likelihood")
@@ -15,18 +16,18 @@ args = parser.parse_args()
 if __name__ == '__main__':
 
     time1 = time.time()
+    sys.stdout = open('MCMC/logs/run_{0}.log'.format(args.config), 'w')
+    sys.stdout = Unbuffered(sys.stdout)
 
     #check directory is dwarf_lensing
     assert os.path.basename(os.getcwd()) == 'dwarf_lensing', 'Need to run in `dwarf_lensing` directory!'
 
     #test
-    if args.test:
+    if args.config in ['Test', 'test', 'TEST']:
         print('TEST')
-        config_file = 'MCMC/mcmc_config_test.yaml'
 
-    else:
-        config_file = 'MCMC/mcmc_config_{0}.yaml'.format(args.config)
-
+    #config file to use
+    config_file = 'MCMC/mcmc_config_{0}.yaml'.format(args.config)
     print(config_file)
     config_initial = parse_config(config_file)
 
