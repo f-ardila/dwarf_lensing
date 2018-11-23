@@ -5,7 +5,7 @@ config: 6
 model_type: '5SHMR+scatter'
 param_ini: [0.40, 0.20, 12.40, 10.916, 0.44, 0.6, 0.8]
 param_low: [0.0, 0.0, 12.2, 10.5, 0.4, 0.2, -0.4 ]
-param_upp: [2.0, 2.0, 12.6, 11.3, 0.5, 0.9, 3.0] 
+param_upp: [2.0, 2.0, 12.6, 11.3, 0.5, 0.9, 3.0]
 param_sig: [0.1, 0.1, 0.03, 0.02, 0.01, 0.01, 0.2 ]
 
 
@@ -42,9 +42,9 @@ mcmc_out_dir: 'MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
 mcmc_nthreads: 1
 mcmc_nburnin: 100
-mcmc_nwalkers_burnin: 50
+mcmc_nwalkers_burnin: 30
 mcmc_nsamples: 500
-mcmc_nwalkers: 50
+mcmc_nwalkers: 30
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
