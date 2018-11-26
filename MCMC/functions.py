@@ -28,29 +28,6 @@ from halotools.utils import randomly_downsample_data
 
 
 ################################################################################
-#Classes
-################################################################################
-class Unbuffered(object):
-    '''
-    Unbuffered class to output stdout.
-    https://stackoverflow.com/questions/107705/disable-output-buffering
-    (Other suggestions didn't work)
-    '''
-   def __init__(self, stream):
-       self.stream = stream
-   def write(self, data):
-       self.stream.write(data)
-       self.stream.flush()
-   def writelines(self, datas):
-       self.stream.writelines(datas)
-       self.stream.flush()
-   def __getattr__(self, attr):
-       return getattr(self.stream, attr)
-
-
-
-
-################################################################################
 #Configuration
 ################################################################################
 def parse_config(config_file):
@@ -776,4 +753,3 @@ def GM_data_location(config):
     return config
 
 ################################################################################
-# todo: print output and config file and everything at once
