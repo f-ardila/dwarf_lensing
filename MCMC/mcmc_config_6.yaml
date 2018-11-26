@@ -43,7 +43,7 @@ mcmc_prefix: 'cosmos_bplanck'
 mcmc_nthreads: 1
 mcmc_nburnin: 100
 mcmc_nwalkers_burnin: 30
-mcmc_nsamples: 500
+mcmc_nsamples: 300
 mcmc_nwalkers: 30
 mcmc_smf_only: False
 mcmc_wl_only: False
