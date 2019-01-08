@@ -160,9 +160,8 @@ dependencies:
     - beautifulsoup4
     - corner
     - cython
-    - emcee
+    - emcee==3.0rc1
     - guppy
     - halotools
     - hmmlearn
 prefix: /Users/fardila/anaconda/envs/dwarf_lensing
-
