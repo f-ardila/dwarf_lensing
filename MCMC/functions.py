@@ -192,7 +192,7 @@ def compute_deltaSigma(model, config, cosmos_data, sim_data):
 
     # mass enclosed by cylinders around each galaxy
     period=model.mock.Lbox
-    r_bins=[float(r) for r in config['sim_wl_bins'].split()]
+    r_bins = np.logspace(-2,0,20)
 
     mass_encl = total_mass_enclosed_per_cylinder(galaxies, sim_data['particles'], sim_data['particle_masses'],
                                                  sim_data['downsampling_factor'], r_bins, period)
@@ -403,16 +403,15 @@ def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds, cosmos_data):
     if np.all(sim_wl_r == 0) and np.all(sim_wl_ds == 0):
         return -np.inf
 
-    # make sure same bins
-    decimal_places_to_round_bins = 5
-    assert np.all(sim_wl_r.round(decimal_places_to_round_bins) == \
-                  np.array(cosmos_data['cosmos_wl_table']['R(Mpc)']).round(decimal_places_to_round_bins))
-
+    r_obs = obs_wl_table['cosmos_wl_r']
     dsigma_obs = obs_wl_table['SigR(Msun/pc^2)']
     dsigma_obs_err = obs_wl_table['err(weights)']
     dsigma_var = (dsigma_obs_err ** 2)
 
-    dsigma_diff = (dsigma_obs - sim_wl_ds) ** 2
+    # interpolate to same bins
+    sim_wl_ds_interpolated = np.interp(r_obs, sim_wl_r, sim_wl_ds)
+
+    dsigma_diff = (dsigma_obs - sim_wl_ds_interpolated) ** 2
 
     dsigma_chi2 = (dsigma_diff / dsigma_var).sum()
 
