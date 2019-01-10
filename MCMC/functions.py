@@ -192,14 +192,18 @@ def compute_deltaSigma(model, config, cosmos_data, sim_data):
 
     # mass enclosed by cylinders around each galaxy
     period=model.mock.Lbox
-    r_bins = np.logspace(-2,0,20)
+    r_bins = np.logspace(-2.1,0,20)
 
     mass_encl = total_mass_enclosed_per_cylinder(galaxies, sim_data['particles'], sim_data['particle_masses'],
                                                  sim_data['downsampling_factor'], r_bins, period)
 
     # delta Sigma
     rp, ds = delta_sigma_from_precomputed_pairs(galaxies, mass_encl, r_bins, period, cosmology=config['sim_cosmo'])
-    ds = ds/1e12 # there seems to be a discrepancy in units pc^2 --> Mpc^2
+
+    #convert to correct physical units
+    ds = ds/1e12 # convert units pc^-2 --> Mpc^-2
+    ds = ds*config['sim_h0']*((1+config['sim_z'])**2) #convert from comoving to physical
+    rp = rp / float(config['sim_h0']*(1+config['sim_z'])) #convert from comoving to physical
 
     return rp, ds
 
@@ -341,8 +345,8 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
     __=ax.set_xlim(xmin = 0.01, xmax = 1)
     # __=ax.set_ylim(ymin = 0.5, ymax = 200)
 
-    __=ax.set_xlabel(r'$R_{\rm p} $  $\rm{[Mpc / h]}$', fontsize=16)
-    __=ax.set_ylabel(r'$\Delta\Sigma(R_{\rm p})$  $[h M_{\odot} / {\rm pc}^2]$', fontsize=16)
+    __=ax.set_xlabel(r'$R_{\rm p} $  $\rm{[Mpc]}$', fontsize=16)
+    __=ax.set_ylabel(r'$\Delta\Sigma(R_{\rm p})$  $[M_{\odot} / {\rm pc}^2]$', fontsize=16)
     __=ax.legend(loc='best', fontsize=13)
     __=plt.xticks(fontsize=15); plt.yticks(fontsize=15)
 
