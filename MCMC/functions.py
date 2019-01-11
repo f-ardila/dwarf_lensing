@@ -591,52 +591,53 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True,
         config['mcmc_ndims'])
 
     if config['mcmc_nthreads'] > 1:
-        from multiprocessing import Pool
-        from contextlib import closing
-
-        with closing(Pool(processes=config['mcmc_nthreads'])) as pool:
-
-            # Decide the Ensemble moves for walkers during burnin
-            burnin_move = mcmc_setup_moves(config, 'mcmc_moves_burnin')
-
-            burnin_sampler = emcee.EnsembleSampler(
-                config['mcmc_nwalkers_burnin'],
-                config['mcmc_ndims'],
-                ln_prob_global,
-                moves=burnin_move,
-                pool=pool,
-                args = [config, cosmos_data, sim_data])
-
-            # Burn-in
-            mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
-                burnin_sampler, mcmc_ini_position, config, verbose=True)
-
-            # Estimate the Kernel density distributions of final brun-in positions
-            # Resample the distributions to get starting positions of the actual run
-            mcmc_kde = gaussian_kde(np.transpose(mcmc_burnin_pos),
-                               bw_method='silverman')
-            mcmc_new_pos = np.transpose(mcmc_kde.resample(config['mcmc_nwalkers']))
-
-            mcmc_new_ini = (mcmc_new_pos, mcmc_burnin_lnp, mcmc_burnin_state)
-
-            # TODO: Convergence test
-            burnin_sampler.reset()
-
-            # Change the moves
-            # Decide the Ensemble moves for walkers during the official run
-            mcmc_move = mcmc_setup_moves(config, 'mcmc_moves')
-
-            mcmc_sampler = emcee.EnsembleSampler(
-                config['mcmc_nwalkers'],
-                config['mcmc_ndims'],
-                ln_prob_global,
-                moves=mcmc_move,
-                pool=pool,
-                args = [config, cosmos_data, sim_data])
-
-            # MCMC run
-            mcmc_run_result = emcee_run(
-                mcmc_sampler, mcmc_new_ini, config, verbose=True)
+        pass
+        # from multiprocessing import Pool
+        # from contextlib import closing
+        #
+        # with closing(Pool(processes=config['mcmc_nthreads'])) as pool:
+        #
+        #     # Decide the Ensemble moves for walkers during burnin
+        #     burnin_move = mcmc_setup_moves(config, 'mcmc_moves_burnin')
+        #
+        #     burnin_sampler = emcee.EnsembleSampler(
+        #         config['mcmc_nwalkers_burnin'],
+        #         config['mcmc_ndims'],
+        #         ln_prob_global,
+        #         moves=burnin_move,
+        #         pool=pool,
+        #         args = [config, cosmos_data, sim_data])
+        #
+        #     # Burn-in
+        #     mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
+        #         burnin_sampler, mcmc_ini_position, config, verbose=True)
+        #
+        #     # Estimate the Kernel density distributions of final brun-in positions
+        #     # Resample the distributions to get starting positions of the actual run
+        #     mcmc_kde = gaussian_kde(np.transpose(mcmc_burnin_pos),
+        #                        bw_method='silverman')
+        #     mcmc_new_pos = np.transpose(mcmc_kde.resample(config['mcmc_nwalkers']))
+        #
+        #     mcmc_new_ini = (mcmc_new_pos, mcmc_burnin_lnp, mcmc_burnin_state)
+        #
+        #     # TODO: Convergence test
+        #     burnin_sampler.reset()
+        #
+        #     # Change the moves
+        #     # Decide the Ensemble moves for walkers during the official run
+        #     mcmc_move = mcmc_setup_moves(config, 'mcmc_moves')
+        #
+        #     mcmc_sampler = emcee.EnsembleSampler(
+        #         config['mcmc_nwalkers'],
+        #         config['mcmc_ndims'],
+        #         ln_prob_global,
+        #         moves=mcmc_move,
+        #         pool=pool,
+        #         args = [config, cosmos_data, sim_data])
+        #
+        #     # MCMC run
+        #     mcmc_run_result = emcee_run(
+        #         mcmc_sampler, mcmc_new_ini, config, verbose=True)
     else:
 
         # define the ensemble moves object for walkers during burn in
