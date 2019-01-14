@@ -509,34 +509,13 @@ def mcmc_setup_moves(config, move_col):
 
     return emcee_moves
 
-def mcmc_burnin(mcmc_sampler, mcmc_position, config, verbose=True):
+def emcee_run(mcmc_sampler, mcmc_ini_position, config, verbose=True):
     """Run the MCMC chain."""
-    # Burn-in
-    if verbose:
-        print("# Phase: Burn-in ...")
-
-    mcmc_burnin_result = mcmc_sampler.run_mcmc(
-        mcmc_position, config['mcmc_nburnin'],
-        progress=True)
-
-    mcmc_save_results(mcmc_burnin_result, mcmc_sampler,
-                      config['mcmc_burnin_file'], config['mcmc_ndims'],
-                      verbose=True)
-
-    # Rest the chains
-    mcmc_sampler.reset()
-
-    return mcmc_burnin_result
-
-def emcee_run(mcmc_sampler, mcmc_burnin_result, config, verbose=True):
-    """Run the MCMC chain."""
-    mcmc_burnin_position, _, mcmc_burnin_state = mcmc_burnin_result
 
     if verbose:
         print("# Phase: MCMC run ...")
     mcmc_run_result = mcmc_sampler.run_mcmc(
-        mcmc_burnin_position, config['mcmc_nsamples'],
-        rstate0=mcmc_burnin_state,
+        mcmc_ini_position, config['mcmc_nsamples'],
         progress=True)
 
     mcmc_save_results(mcmc_run_result, mcmc_sampler,
@@ -640,31 +619,6 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True,
         #         mcmc_sampler, mcmc_new_ini, config, verbose=True)
     else:
 
-        # define the ensemble moves object for walkers during burn in
-        burnin_move = mcmc_setup_moves(config, 'mcmc_moves_burnin')
-        # define sampler
-        burnin_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers_burnin'],
-                                               config['mcmc_ndims'],
-                                                ln_prob_global,
-                                                moves=burnin_move,
-                                                args = [config, cosmos_data, sim_data,
-                                                            smf_only, ds_only])
-
-        # Burn-in
-        mcmc_burnin_pos, mcmc_burnin_lnp, mcmc_burnin_state = mcmc_burnin(
-            burnin_sampler, mcmc_ini_position, config, verbose=True)
-
-        # Estimate the Kernel density distributions of final burn-in positions
-        # Resample the distributions to get starting positions of the actual run
-        mcmc_kde = gaussian_kde(np.transpose(mcmc_burnin_pos),
-                            bw_method='silverman')
-        mcmc_new_pos = np.transpose(mcmc_kde.resample(config['mcmc_nwalkers']))
-
-        mcmc_new_ini = (mcmc_new_pos, mcmc_burnin_lnp, mcmc_burnin_state)
-
-
-        # MCMC run
-
         # Decide the Ensemble moves for walkers during burnin
         mcmc_move = mcmc_setup_moves(config, 'mcmc_moves')
         # define sampler
@@ -675,7 +629,7 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True,
                                              args = [config, cosmos_data, sim_data,
                                                          smf_only, ds_only])
 
-        mcmc_run_result = emcee_run(mcmc_sampler, mcmc_new_ini, config, verbose=True)
+        mcmc_run_result = emcee_run(mcmc_sampler, mcmc_ini_position, config, verbose=True)
 
     return mcmc_run_result
 

@@ -41,15 +41,12 @@ param_labels: ['scatter_model_param1',
 mcmc_out_dir: 'MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
 mcmc_nthreads: 1
-mcmc_nburnin: 2
-mcmc_nwalkers_burnin: 4
-mcmc_nsamples: 2
+mcmc_nsamples: 1
 mcmc_nwalkers: 4
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
 mcmc_ndims: 2
-mcmc_moves_burnin: 'walk'
 mcmc_moves: 'walk'
 mcmc_stretch_a: 2.0
 mcmc_live_dangerously: True #for testing on smaller walker size
