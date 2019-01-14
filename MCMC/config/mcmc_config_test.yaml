@@ -1,63 +1,59 @@
-config: 'test'
+config: test
 
 # Model parameters
-model_type: '5SHMR+scatter'
-param_ini: [0.40, 0.20, 12.50, 10.90, 0.46, 0.57, 1.50]
-param_low: [0.00, 0.00, 10.00, 8.00, 0.00, 0.00, 0.00]
-param_upp: [1.00, 1.00, 14.00, 13.00, 1.00, 0.90, 3.00]
-param_sig: [0.10, 0.10, 0.10, 0.10, 0.05, 0.05, 0.05]
-
-leauthaud_params : [0.40, 0.20, 12.52, 10.916, 0.457, 0.566, 1.53]
-behroozi_params : [0.40, 0.20, 12.35, 10.72, 0.43, 0.56, 1.54]
-ten_sigma_low : [0.0, 0.0, 12.15, 10.716, 0.367, -0.294, -0.27 ]
-ten_sigma_upp : [1.0, 1.0, 12.89, 11.116, 0.547, 0.9, 3.33]
-three_sigma : [0.1, 0.1, 0.111, 0.06, 0.027, 0.258, 0.54 ]
-one_sigma : [0.1, 0.1, 0.03, 0.02, 0.01, 0.01, 0.2 ]
-
-param_labels: ['scatter_model_param1',
-               'scatter_model_param2',
-               'smhm_m1_0',
-               'smhm_m0_0',
-               'smhm_beta_0',
-               'smhm_delta_0',
-               'smhm_gamma_0']
+# adjusted from previous runs
+# model_type: '5SHMR+scatter'
+# param_ini: [0.40, 0.20, 12.40, 10.916, 0.44, 0.6, 0.8]
+# param_low: [0.0, 0.0, 12.2, 10.5, 0.4, 0.2, -0.4 ]
+# param_upp: [2.0, 2.0, 12.6, 11.3, 0.5, 0.9, 3.0]
+# param_sig: [0.1, 0.1, 0.03, 0.02, 0.01, 0.01, 0.2 ]
+#
+#
+# param_labels: ['scatter_model_param1',
+#                'scatter_model_param2',
+#                'smhm_m1_0',
+#                'smhm_m0_0',
+#                'smhm_beta_0',
+#                'smhm_delta_0',
+#                'smhm_gamma_0']
 redshift_param_labels: ['smhm_m1_a',
                         'smhm_m0_a',
                         'smhm_beta_a',
                         'smhm_delta_a',
                         'smhm_gamma_a']
-param_labels_latex: ['$\sigma_{12}$',
-                     '$\sigma_{15}$',
-                     '$\log_{10}(M_{1})$',
-                     '$\log_{10}(M_{\star, 0})$',
-                     '$\beta$',
-                     '$\delta$',
-                     '$\gamma$']
+# param_labels_latex: ['$\sigma_{12}$',
+#                      '$\sigma_{15}$',
+#                      '$\log_{10}(M_{1})$',
+#                      '$\log_{10}(M_{\star, 0})$',
+#                      '$\beta$',
+#                      '$\delta$',
+#                      '$\gamma$']
 
-# model_type: 'scatter_only'
-# param_ini: [0.4, 0.2]
-# param_low: [0.00, 0.00]
-# param_upp: [1.00, 1.00]
-# param_sig: [0.10, 0.10]
-# mcmc_param_labels: ['scatter_model_param1',
-#                     'scatter_model_param2']
+model_type: 'scatter_only'
+param_ini: [0.4, 0.2]
+param_low: [0.00, 0.00]
+param_upp: [1.00, 1.00]
+param_sig: [0.10, 0.10]
+param_labels: ['scatter_model_param1',
+                    'scatter_model_param2']
 
 # MCMC Runs
 mcmc_out_dir: 'MCMC/outfiles/'
 mcmc_prefix: 'cosmos_bplanck'
-mcmc_nsamples: 2
 mcmc_nthreads: 1
 mcmc_nburnin: 2
-mcmc_nwalkers_burnin: 2
-mcmc_nwalkers: 2
+mcmc_nwalkers_burnin: 4
+mcmc_nsamples: 2
+mcmc_nwalkers: 4
 mcmc_smf_only: False
 mcmc_wl_only: False
 mcmc_wl_weight: 1.0
-mcmc_ndims: 7
-mcmc_moves_burnin: 'stretch'
-mcmc_moves: 'stretch'
+mcmc_ndims: 2
+mcmc_moves_burnin: 'walk'
+mcmc_moves: 'walk'
 mcmc_stretch_a: 2.0
 mcmc_live_dangerously: True #for testing on smaller walker size
+
 
 
 #############################################################################

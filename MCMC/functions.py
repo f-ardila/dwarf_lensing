@@ -407,7 +407,7 @@ def dsigma_lnlike(obs_wl_table, sim_wl_r, sim_wl_ds, cosmos_data):
     if np.all(sim_wl_r == 0) and np.all(sim_wl_ds == 0):
         return -np.inf
 
-    r_obs = obs_wl_table['cosmos_wl_r']
+    r_obs = obs_wl_table['R(Mpc)']
     dsigma_obs = obs_wl_table['SigR(Msun/pc^2)']
     dsigma_obs_err = obs_wl_table['err(weights)']
     dsigma_var = (dsigma_obs_err ** 2)

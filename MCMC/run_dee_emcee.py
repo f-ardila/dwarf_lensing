@@ -31,6 +31,10 @@ class Unbuffered(object):     #Unbuffered class to output stdout. https://stacko
 if __name__ == '__main__':
 
     time1 = time.time()
+
+    #check directory is dwarf_lensing
+    assert os.path.basename(os.getcwd()) == 'dwarf_lensing', 'Need to run in `dwarf_lensing` directory!'
+
     #log stdout and stderr in oputput file
     sys.stdout = open('MCMC/logs/run_{0}.log'.format(args.config), 'w')
     sys.stderr = open('MCMC/logs/run_{0}.log'.format(args.config), 'w')
@@ -40,15 +44,12 @@ if __name__ == '__main__':
     sys.stderr = sys.stdout
     # sys.stderr = Unbuffered(sys.stderr)
 
-    #check directory is dwarf_lensing
-    assert os.path.basename(os.getcwd()) == 'dwarf_lensing', 'Need to run in `dwarf_lensing` directory!'
-
     #test
     if args.config in ['Test', 'test', 'TEST']:
         print('TEST')
 
     #config file to use
-    config_file = 'MCMC/mcmc_config_{0}.yaml'.format(args.config)
+    config_file = 'MCMC/config/mcmc_config_{0}.yaml'.format(args.config)
     print(config_file)
     config_initial = parse_config(config_file)
 
