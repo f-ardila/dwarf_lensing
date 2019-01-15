@@ -509,25 +509,9 @@ def mcmc_setup_moves(config, move_col):
 
     return emcee_moves
 
-def emcee_run(mcmc_sampler, mcmc_ini_position, config, verbose=True):
-    """Run the MCMC chain."""
-
-    if verbose:
-        print("# Phase: MCMC run ...")
-    mcmc_run_result = mcmc_sampler.run_mcmc(
-        mcmc_ini_position, config['mcmc_nsamples'],
-        progress=True)
-
-    mcmc_save_results(mcmc_run_result, mcmc_sampler,
-                      config['mcmc_run_file'], config['mcmc_ndims'],
-                      verbose=True)
-
-    return mcmc_run_result
-
-def mcmc_save_results(mcmc_results, mcmc_sampler, mcmc_file,
+def mcmc_save_results(mcmc_position, mcmc_sampler, mcmc_file,
                       mcmc_ndims, verbose=True):
     """Save the MCMC run results."""
-    (mcmc_position, mcmc_lnprob, _) = mcmc_results
 
     mcmc_samples = mcmc_sampler.chain[:, :, :].reshape(
         (-1, mcmc_ndims))
@@ -621,17 +605,36 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True,
 
         # Decide the Ensemble moves for walkers during burnin
         mcmc_move = mcmc_setup_moves(config, 'mcmc_moves')
-        # define sampler
-        mcmc_sampler = emcee.EnsembleSampler(config['mcmc_nwalkers'],
+
+        # Set up the backend to save results
+        # Don't forget to clear it in case the file already exists
+        filename = "backend.hdf5"
+        backend = emcee.backends.HDFBackend(filename)
+        backend.reset(config['mcmc_nwalkers'], config['mcmc_ndims'])
+
+        # Initialize the sampler
+        sampler = emcee.EnsembleSampler(config['mcmc_nwalkers'],
                                              config['mcmc_ndims'],
                                              ln_prob_global,
                                              moves=mcmc_move,
                                              args = [config, cosmos_data, sim_data,
-                                                         smf_only, ds_only])
+                                                         smf_only, ds_only],
+                                             backend=backend)
 
-        mcmc_run_result = emcee_run(mcmc_sampler, mcmc_ini_position, config, verbose=True)
+        if verbose:
+            print("# Phase: MCMC run ...")
 
-    return mcmc_run_result
+        for sample in sampler.sample(mcmc_ini_position,
+                                              iterations=config['mcmc_nsamples'],
+                                              progress=True,
+                                              store= True):
+            mcmc_save_results(sample.coords, sampler,
+                              config['mcmc_run_file'], config['mcmc_ndims'],
+                              verbose=True)
+
+
+
+    return
 
 ################################################################################
 # Helper functions
