@@ -130,14 +130,84 @@ def initial_model(config, verbose=True):
 ################################################################################
 # Measurements
 ################################################################################
-def compute_SMF(model, config, nbins=100):
+def predict_model(param, config, obs_data, sim_data,
+                  mass_x_field = 'halo_Vmax@Mpeak',
+                  smf_only=False, ds_only=False, halotools = False):
+    """Return all model predictions.
+    Parameters
+    ----------
+    param: list, array, or tuple.
+        Input model parameters.
+    config : dict
+        Configurations of the data and model.
+    obs_data: dict
+        Dictionary for observed data.
+    sim_data: dict
+        Dictionary for UniverseMachine data.
+    constant_bin : boolen
+        Whether to use constant bin size for logMs_tot or not.
+    return_all : bool, optional
+        Return all model information.
+    show_smf : bool, optional
+        Show the comparison of SMF.
+    show_dsigma : bool, optional
+        Show the comparisons of WL.
+    """
+    if halotools:
+        print("USING HALOTOOLS")
+    # build_model and populate mock
+        if 'model' in sim_data: # save memory if model already exists
+            for i, model_param in enumerate(config['param_labels']):
+                sim_data['model'].param_dict[model_param] = param[i]
 
-    # Read stellar masses
-    M = model.mock.galaxy_table['stellar_mass']
-    #M = M[(M>1) & (M<np.inf)] #apparently some models produce galaxies with 0 mass and some with tiny mass and some with infinite mass
+            # set redshift dependence to 0
+            for i, model_param in enumerate(config['redshift_param_labels']):
+                sim_data['model'].param_dict[model_param] = 0
 
-    # Take logarithm
-    logM = np.log10(M)
+            sim_data['model'].mock.populate()
+            print('mock.populate')
+
+        else:
+            sim_data['model'] = PrebuiltSubhaloModelFactory('behroozi10', redshift=config['sim_z'],
+                                            scatter_abscissa=[12, 15],
+                                            scatter_ordinates=[param[0], param[1]])
+
+            for i, model_param in enumerate(config['param_labels']):
+                sim_data['model'].param_dict[model_param] = param[i]
+
+            # set redshift dependence to 0
+            for i, model_param in enumerate(config['redshift_param_labels']):
+                sim_data['model'].param_dict[model_param] = 0
+
+            # populate mock
+            # sim_data['model'].populate_mock(deepcopy(sim_data['halocat']))
+            sim_data['model'].populate_mock(sim_data['halocat'])
+            print('populate_mock')
+
+        print(sim_data['model'].param_dict)
+
+        stellar_masses =  np.log10(sim_data['model'].mock.galaxy_table['stellar_mass'])
+
+    else: #use Chris' code instead of halotools
+        print("USING CHRIS' CODE with {0}".format(mass_x_field))
+        halo_data = sim_data['halocat'].halo_table
+        stellar_masses = get_sm_for_sim(halo_data, params, mass_x_field)
+
+    # Predict SMFs
+    smf_mass_bins, smf_log_phi = compute_SMF(stellar_masses, config, nbins=100)
+    print('SMF computed')
+    if smf_only:
+        return smf_mass_bins, smf_log_phi, None, None
+
+    # Predict DeltaSigma profiles
+    wl_r, wl_ds = compute_deltaSigma(sim_data['model'], config, obs_data, sim_data)
+    print('DS computed')
+    if ds_only:
+        return None, None, wl_r, wl_ds
+
+    return smf_mass_bins, smf_log_phi, wl_r, wl_ds
+
+def compute_SMF(log_stellar_masses, config, nbins=100):
 
     # Survey volume in Mpc3
     L=config['sim_lbox']
@@ -145,7 +215,7 @@ def compute_SMF(model, config, nbins=100):
     V = (L/h0)**3
 
     # Unnormalized histogram and bin edges
-    Phi,edg = np.histogram(logM,bins=nbins)
+    Phi,edg = np.histogram(log_stellar_masses,bins=nbins)
 
     # Bin size
     dM    = edg[1] - edg[0]
@@ -206,100 +276,6 @@ def compute_deltaSigma(model, config, cosmos_data, sim_data):
     rp = rp / float(config['sim_h0']*(1+config['sim_z'])) #convert from comoving to physical
 
     return rp, ds
-
-
-def predict_model(param, config, obs_data, sim_data,
-                  smf_only=False, ds_only=False):
-    """Return all model predictions.
-    Parameters
-    ----------
-    param: list, array, or tuple.
-        Input model parameters.
-    config : dict
-        Configurations of the data and model.
-    obs_data: dict
-        Dictionary for observed data.
-    sim_data: dict
-        Dictionary for UniverseMachine data.
-    constant_bin : boolen
-        Whether to use constant bin size for logMs_tot or not.
-    return_all : bool, optional
-        Return all model information.
-    show_smf : bool, optional
-        Show the comparison of SMF.
-    show_dsigma : bool, optional
-        Show the comparisons of WL.
-    """
-
-    # build_model and populate mock
-    if 'model' in sim_data: # save memory if model already exists
-        for i, model_param in enumerate(config['param_labels']):
-            sim_data['model'].param_dict[model_param] = param[i]
-
-        # set redshift dependence to 0
-        for i, model_param in enumerate(config['redshift_param_labels']):
-            sim_data['model'].param_dict[model_param] = 0
-
-        sim_data['model'].mock.populate()
-        print('mock.populate')
-
-    else:
-        sim_data['model'] = PrebuiltSubhaloModelFactory('behroozi10', redshift=config['sim_z'],
-                                        scatter_abscissa=[12, 15],
-                                        scatter_ordinates=[param[0], param[1]])
-
-        for i, model_param in enumerate(config['param_labels']):
-            sim_data['model'].param_dict[model_param] = param[i]
-
-        # set redshift dependence to 0
-        for i, model_param in enumerate(config['redshift_param_labels']):
-            sim_data['model'].param_dict[model_param] = 0
-
-        # populate mock
-        # sim_data['model'].populate_mock(deepcopy(sim_data['halocat']))
-        sim_data['model'].populate_mock(sim_data['halocat'])
-        print('populate_mock')
-
-    print(sim_data['model'].param_dict)
-
-    # Predict SMFs
-    smf_mass_bins, smf_log_phi = compute_SMF(sim_data['model'],config, nbins=100)
-    print('SMF computed')
-    if smf_only:
-        return smf_mass_bins, smf_log_phi, None, None
-
-    # Predict DeltaSigma profiles
-    wl_r, wl_ds = compute_deltaSigma(sim_data['model'], config, obs_data, sim_data)
-    print('DS computed')
-    if ds_only:
-        return None, None, wl_r, wl_ds
-
-
-#     if show_smf:
-#         um_smf_tot_all = get_smf_bootstrap(logms_mod_tot_all,
-#                                            cfg['um_volume'],
-#                                            20, cfg['obs_min_mtot'], 12.5,
-#                                            n_boots=1)
-#         _ = plot_mtot_minn_smf(
-#             obs_data['obs_smf_tot'], obs_data['obs_smf_inn'],
-#             obs_data['obs_mtot'], obs_data['obs_minn'],
-#             um_smf_tot, um_smf_inn,
-#             logms_mod_tot, logms_mod_inn,
-#             obs_smf_full=obs_data['obs_smf_full'],
-#             um_smf_tot_all=um_smf_tot_all,
-#             not_table=True)
-
-#     if show_dsigma:
-#         um_mhalo_tuple = asap_predict_mhalo(
-#             obs_data['obs_wl_dsigma'], um_data['um_mock'][mask_mtot],
-#             logms_mod_tot, logms_mod_inn)
-#         _ = plot_dsigma_profiles(obs_data['obs_wl_dsigma'],
-#                                  um_dsigma_profs, obs_mhalo=None,
-#                                  um_mhalo=um_mhalo_tuple)
-
-
-
-    return smf_mass_bins, smf_log_phi, wl_r, wl_ds
 
 ################################################################################
 # Plotting
@@ -779,7 +755,10 @@ def f_shmr_inverse_der(log_stellar_masses, sm0, beta, delta, gamma):
 
 # Given the b_params for the behroozi functional form, and the halos in the sim
 # find the SM for each halo
-def get_sm_for_sim(sim_data, b_params, s_params, x_field, sanity=False):
+def get_sm_for_sim(sim_data, params, x_field, sanity=False):
+
+    """params : 2 scatter params + 5 SHMR params
+        x_field: 'halo_mvir' or "halo_Vmax@Mpeak" """
     assert len(b_params) == 5 and len(s_params) == 2
 
     log_halo_masses = np.log10(sim_data[x_field])
@@ -791,9 +770,9 @@ def get_sm_for_sim(sim_data, b_params, s_params, x_field, sanity=False):
     try:
         sample_stellar_masses = f_shmr(
             sample_halo_masses,
-            10**b_params[0],
-            10**b_params[1],
-            *b_params[2:])
+            10**b_params[2],
+            10**b_params[3],
+            *b_params[4:])
 
     except Exception as e:
         if e.args[0].startswith("Failure to invert"):
@@ -812,7 +791,10 @@ def get_sm_for_sim(sim_data, b_params, s_params, x_field, sanity=False):
     # But that is much harder. So we just accept the stochasticity and that the MCMC
     # will take longer to converge
 
-    log_sm_scatter = s_params[0] * log_halo_masses + s_params[1]
+    #convert scatter parameters from 2 points to slope and intercept
+    scatter_params = np.polyfit([12,15],[params[0],params[1]],1)
+
+    log_sm_scatter = scatter_params[0] * log_halo_masses + scatter_params[1]
     if not np.all(log_sm_scatter > 0):
         print("negative scatter")
         return np.zeros_like(log_stellar_masses)
