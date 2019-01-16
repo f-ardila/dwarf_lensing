@@ -19,9 +19,18 @@ halo_cat_file='/Users/fardila/Documents/GitHub/dwarf_lensing/Data/bplanck/hlist_
 
 
 output_fname = '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/bplanck/hlist_0.78209.hdf5'
-columns_to_keep_dict = {'halo_id': (1, 'i8'), 'halo_upid': (6, 'i8'), 'halo_mvir': (10, 'f4'), 'halo_x': (17, 'f4'),
-                        'halo_y': (18, 'f4'), 'halo_z': (19, 'f4'),'halo_vx': (20, 'f4'), 'halo_vy': (21, 'f4'),
-                        'halo_vz': (22, 'f4'), 'halo_rvir': (11, 'f4'), 'halo_mpeak': (60, 'f4')}
+columns_to_keep_dict = {'halo_id': (1, 'i8'),
+                        'halo_upid': (6, 'i8'),
+                        'halo_mvir': (10, 'f4'),
+                        'halo_x': (17, 'f4'),
+                        'halo_y': (18, 'f4'),
+                        'halo_z': (19, 'f4'),
+                        'halo_vx': (20, 'f4'),
+                        'halo_vy': (21, 'f4'),
+                        'halo_vz': (22, 'f4'),
+                        'halo_rvir': (11, 'f4'),
+                        'halo_mpeak': (60, 'f4'),
+                        'Vmax@Mpeak': (74, "float64")}
 #is there a way to read in all columns? NO
 
 simname = 'bolshoi-planck'
