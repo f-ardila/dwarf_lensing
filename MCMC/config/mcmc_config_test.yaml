@@ -105,10 +105,6 @@ sim_omega_m: 0.307
 sim_halo_cat_file: 'hlist_0.78209.list'
 sim_output_fname : 'hlist_0.78209.hdf5'
 sim_particle_file : 'bplanck_particles_100m_a0.78209.hdf5'
-sim_columns_to_keep_dict : >
-                          {'halo_id': (1, 'i8'), 'halo_upid': (6, 'i8'),
-                          'halo_mvir': (10, 'f4'), 'halo_x': (17, 'f4'),
-                          'halo_y': (18, 'f4'), 'halo_z': (19, 'f4'),
-                          'halo_vx': (20, 'f4'), 'halo_vy': (21, 'f4'),
-                          'halo_vz': (22, 'f4'), 'halo_rvir': (11, 'f4'),
-                          'halo_mpeak': (60, 'f4')}
+
+sim_halotools : False
+sim_mass_x_field : 'halo_Vmax@Mpeak'

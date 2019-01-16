@@ -411,10 +411,14 @@ def ln_like(param_tuple, config, obs_data, sim_data,
     # print(h.heap())
 
     # Generate the model predictions
-    sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = predict_model(parameters, config, obs_data, sim_data,
-                                                                            smf_only, ds_only)
+    model_outputs = predict_model(parameters, config, obs_data, sim_data,
+                                  mass_x_field = config['sim_mass_x_field'],
+                                  smf_only, ds_only,
+                                  halotools = config['sim_halotools'])
 
+    sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = model_outputs
     print('model predicted')
+
     # Likelihood for SMFs.
     smf_lnlike_value = smf_lnlike(obs_data['cosmos_SMF_points_table'],
                                     sim_smf_mass_bins, sim_smf_log_phi)
