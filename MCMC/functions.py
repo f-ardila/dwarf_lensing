@@ -763,8 +763,13 @@ def get_sm_for_sim(sim_data, params, x_field, sanity=False):
 
     """params : 2 scatter params + 5 SHMR params
         x_field: 'halo_mvir' or "halo_Vmax@Mpeak" """
-    assert len(b_params) == 5 and len(s_params) == 2
+    if len(params) == 2:
+        if x_field == 'halo_mvir':
+            params = params+[12.52, 10.91, 0.45, 0.6, 1.83]
+        elif x_field == 'halo_Vmax@Mpeak':
+            params = params+[2.4, 10.91, 0.45, 0.3, 0.2]
 
+    #not necessarily mass, can also be velocity Vmax@Mpeak
     log_halo_masses = np.log10(sim_data[x_field])
     min_mvir = np.min(log_halo_masses)
     max_mvir = np.max(log_halo_masses)
