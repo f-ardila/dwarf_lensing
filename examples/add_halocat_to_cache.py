@@ -30,7 +30,7 @@ columns_to_keep_dict = {'halo_id': (1, 'i8'),
                         'halo_vz': (22, 'f4'),
                         'halo_rvir': (11, 'f4'),
                         'halo_mpeak': (60, 'f4'),
-                        'Vmax@Mpeak': (74, "float64")}
+                        'halo_Vmax@Mpeak': (74, "float64")}
 #is there a way to read in all columns? NO
 
 simname = 'bolshoi-planck'
