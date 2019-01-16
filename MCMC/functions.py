@@ -10,6 +10,7 @@ import emcee
 print(emcee.__version__) #need version 3 (pip install emcee==3.0rc1)
 import yaml
 
+import scipy
 from scipy.stats import gaussian_kde, ks_2samp
 
 from astropy.table import Table, Column
@@ -131,8 +132,7 @@ def initial_model(config, verbose=True):
 # Measurements
 ################################################################################
 def predict_model(param, config, obs_data, sim_data,
-                  mass_x_field = 'halo_Vmax@Mpeak',
-                  smf_only=False, ds_only=False, halotools = False):
+                  smf_only=False, ds_only=False):
     """Return all model predictions.
     Parameters
     ----------
@@ -153,6 +153,10 @@ def predict_model(param, config, obs_data, sim_data,
     show_dsigma : bool, optional
         Show the comparisons of WL.
     """
+
+    mass_x_field = config['sim_mass_x_field']
+    halotools = config['sim_halotools']
+
     if halotools:
         print("USING HALOTOOLS with halo_mvir")
     # build_model and populate mock
@@ -191,7 +195,7 @@ def predict_model(param, config, obs_data, sim_data,
     else: #use Chris' code instead of halotools
         print("USING CHRIS' CODE with {0}".format(mass_x_field))
         halo_data = sim_data['halocat'].halo_table
-        stellar_masses = get_sm_for_sim(halo_data, params, mass_x_field)
+        stellar_masses = get_sm_for_sim(halo_data, param, mass_x_field)
 
     # Predict SMFs
     smf_mass_bins, smf_log_phi = compute_SMF(stellar_masses, config, nbins=100)
@@ -200,7 +204,7 @@ def predict_model(param, config, obs_data, sim_data,
         return smf_mass_bins, smf_log_phi, None, None
 
     # Predict DeltaSigma profiles
-    wl_r, wl_ds = compute_deltaSigma(sim_data['model'], config, obs_data, sim_data)
+    wl_r, wl_ds = compute_deltaSigma(stellar_masses, config, obs_data, sim_data)
     print('DS computed')
     if ds_only:
         return None, None, wl_r, wl_ds
@@ -227,16 +231,17 @@ def compute_SMF(log_stellar_masses, config, nbins=100):
 
     return bin_centers, logPhi
 
-def compute_deltaSigma(model, config, cosmos_data, sim_data):
+def compute_deltaSigma(stellar_masses, config, cosmos_data, sim_data):
 
     # n_nearest = 40
     n_nearest = 90
 
     # select subsample of dwarfs from galaxy catalog
-    mock_galaxies = model.mock.galaxy_table
-    mock_galaxies = mock_galaxies['x', 'y', 'z', 'stellar_mass']
-    mock_galaxies = np.array(mock_galaxies[(np.log10(mock_galaxies['stellar_mass'])>=min(cosmos_data['cosmos_dwarf_masses'])) & \
-                                  (np.log10(mock_galaxies['stellar_mass'])<9.0)])
+    # galaxies have the same positions as subhalos
+    mock_galaxies = sim_data['halocat'].halo_table['halo_x', 'halo_y', 'halo_z']
+    mock_galaxies['stellar_mass'] = stellar_masses
+    mock_galaxies = np.array(mock_galaxies[(mock_galaxies['stellar_mass']>=min(cosmos_data['cosmos_dwarf_masses'])) & \
+                                  (mock_galaxies['stellar_mass']<9.0)])
     # half_mock_galaxies = np.random.choice(mock_galaxies,500000)
     print('cut galaxies table', len(mock_galaxies))
 
@@ -249,19 +254,19 @@ def compute_deltaSigma(model, config, cosmos_data, sim_data):
                                                                     mock_galaxies,
                                                                     n_nearest = n_nearest)
 
-    print(ks_2samp(np.log10(galaxies_table['stellar_mass']),cosmos_data['cosmos_dwarf_masses']))
-    if ks_2samp(np.log10(galaxies_table['stellar_mass']),cosmos_data['cosmos_dwarf_masses'])[1] < 0.95:
+    print(ks_2samp(galaxies_table['stellar_mass'],cosmos_data['cosmos_dwarf_masses']))
+    if ks_2samp(galaxies_table['stellar_mass'],cosmos_data['cosmos_dwarf_masses'])[1] < 0.95:
         print('Mock and COSMOS distributions don\'t match!')
         return 0, 0
 
     # read in galaxy positions
-    x = galaxies_table['x']
-    y = galaxies_table['y']
-    z = galaxies_table['z']
+    x = galaxies_table['halo_x']
+    y = galaxies_table['halo_y']
+    z = galaxies_table['halo_z']
     galaxies = np.vstack((x, y, z)).T
 
     # mass enclosed by cylinders around each galaxy
-    period=model.mock.Lbox
+    period=np.ones(3)*config['sim_lbox']
     r_bins = np.logspace(-2.1,0,20)
 
     mass_encl = total_mass_enclosed_per_cylinder(galaxies, sim_data['particles'], sim_data['particle_masses'],
@@ -412,9 +417,7 @@ def ln_like(param_tuple, config, obs_data, sim_data,
 
     # Generate the model predictions
     model_outputs = predict_model(parameters, config, obs_data, sim_data,
-                                  mass_x_field = config['sim_mass_x_field'],
-                                  smf_only, ds_only,
-                                  halotools = config['sim_halotools'])
+                                  smf_only, ds_only)
 
     sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = model_outputs
     print('model predicted')
@@ -672,7 +675,7 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
     mock_galaxies.sort(order = str('stellar_mass'))
 
     # indices of nearest mock mass for each dwarf mass
-    indices = np.searchsorted(mock_galaxies['stellar_mass'], 10**dwarf_masses)
+    indices = np.searchsorted(mock_galaxies['stellar_mass'], dwarf_masses)
 
     #add additional nearest
     for index in indices:
@@ -759,7 +762,8 @@ def f_shmr_inverse_der(log_stellar_masses, sm0, beta, delta, gamma):
 
 # Given the b_params for the behroozi functional form, and the halos in the sim
 # find the SM for each halo
-def get_sm_for_sim(sim_data, params, x_field, sanity=False):
+def get_sm_for_sim(halo_data, params, x_field, sanity=False):
+
 
     """params : 2 scatter params + 5 SHMR params
         x_field: 'halo_mvir' or "halo_Vmax@Mpeak" """
@@ -770,7 +774,7 @@ def get_sm_for_sim(sim_data, params, x_field, sanity=False):
             params = params+[2.4, 10.91, 0.45, 0.3, 0.2]
 
     #not necessarily mass, can also be velocity Vmax@Mpeak
-    log_halo_masses = np.log10(sim_data[x_field])
+    log_halo_masses = np.log10(halo_data[x_field])
     min_mvir = np.min(log_halo_masses)
     max_mvir = np.max(log_halo_masses)
 
@@ -779,9 +783,9 @@ def get_sm_for_sim(sim_data, params, x_field, sanity=False):
     try:
         sample_stellar_masses = f_shmr(
             sample_halo_masses,
-            10**b_params[2],
-            10**b_params[3],
-            *b_params[4:])
+            10**params[2],
+            10**params[3],
+            *params[4:])
 
     except Exception as e:
         if e.args[0].startswith("Failure to invert"):
