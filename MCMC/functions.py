@@ -154,7 +154,7 @@ def predict_model(param, config, obs_data, sim_data,
         Show the comparisons of WL.
     """
     if halotools:
-        print("USING HALOTOOLS")
+        print("USING HALOTOOLS with halo_mvir")
     # build_model and populate mock
         if 'model' in sim_data: # save memory if model already exists
             for i, model_param in enumerate(config['param_labels']):
