@@ -626,33 +626,51 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True,
 def find_nearest_new_indices_sorted(index, n, existing_indices, length):
     """
     index: index of closest value
-    n: number of closest
+    n: number of closest that we want
     existing_indices: indices that already exist to avoid repeats
+    length: of array from which we are sampling (i.e. mock_galaxies)
 
     return:
     indices of n nearest rows
     """
 
-    # indices of nearest rows
-    nearest_rows=[]
+    # indices nearest to index
+    nearest_indices=[]
 
-    # append index
-    i=0
+    # not already in subsample and index within sample
     if index not in existing_indices and index <length:
-            nearest_rows.append(index)
+            nearest_indices.append(index)
 
     #append next nearest indices
-    while len(nearest_rows) < n:
+    i=0
+    while len(nearest_indices) < n:
+        # print('length of nearest: ', len(nearest_indices) )
+        # print('distance from nearest index (i) ', i)
 
-        if index + i not in existing_indices and index + i not in nearest_rows and index + i<length:
-            nearest_rows.append(index + i)
+        if index + i not in existing_indices and \
+           index + i not in nearest_indices and \
+           index + i < length:
+            # print('above')
+            nearest_indices.append(index + i)
 
-        if len(nearest_rows) < n and index - i not in existing_indices and index - i not in nearest_rows and index - i>0 and index - i<length:
-            nearest_rows.append(index - i)
+        if len(nearest_indices) < n and \
+           index - i not in existing_indices and \
+           index - i not in nearest_indices and \
+           index - i >= 0 and \
+           index - i < length:
+            # print('below')
+            nearest_indices.append(index - i)
 
         i += 1
 
-    return nearest_rows
+        # if it can't find nearest indices within 10000 of nearest, then just
+        # return what we have. if the distributions are dissimilar it won't
+        # accept anyways
+        if i > 10000:
+            return nearest_indices
+
+
+    return nearest_indices
 
 def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galaxies, n_nearest):
     """
@@ -674,18 +692,22 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
     # sort first to speed up future calculations
     mock_galaxies.sort(order = str('stellar_mass'))
 
-    print(mock_galaxies['stellar_mass'], dwarf_masses)
-
-    # indices of nearest mock mass for each dwarf mass
+    # indices of single nearest mock mass for each dwarf mass
     indices = np.searchsorted(mock_galaxies['stellar_mass'], dwarf_masses)
 
-    #add additional nearest
+    #for each dwarf mass, add additional nearest indices
     for i, index in enumerate(indices):
-        print('index ', len(indices) - i)
 
-        matched_indices = find_nearest_new_indices_sorted(index, n_nearest, subsample_indices, len(mock_galaxies))
+        #return the n_nearest indices closest to index (the index of closest mass)
+        matched_indices = find_nearest_new_indices_sorted(index,
+                                                          n_nearest,
+                                                          subsample_indices,
+                                                          len(mock_galaxies))
 
+        #add elements of matched_indices to subsample_indices
         subsample_indices.update(matched_indices)
+
+        # if i==3: print(foo)
 
     subsample = mock_galaxies[list(subsample_indices)]
 
