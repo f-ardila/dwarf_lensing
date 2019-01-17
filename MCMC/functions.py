@@ -691,6 +691,13 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
     # import pdb;  pdb.set_trace()
     # sort first to speed up future calculations
     mock_galaxies.sort(order = str('stellar_mass'))
+    plt.hist(mock_galaxies['stellar_mass'], bins=500)
+    plt.title('all mock masses in the COSMOS dwarf range')
+    plt.show()
+
+    plt.hist(10**(mock_galaxies['stellar_mass'][500000:520000]), bins=500)
+    plt.title("between sorted dwarf masses 500000 and 520000 ")
+    plt.show()
 
     # indices of single nearest mock mass for each dwarf mass
     indices = np.searchsorted(mock_galaxies['stellar_mass'], dwarf_masses)
