@@ -120,10 +120,10 @@ def initial_model(config, verbose=True):
     data_sim, config_obs_sim = load_sim_data(config_obs)
 
     #setup model
-    config_obs_sim['mcmc_burnin_file'] = os.path.join(
-        config_obs_sim['mcmc_out_dir'], config_obs_sim['mcmc_prefix'] + '_burnin_{0}.npz'.format(str(config_obs_sim['config'])))
-    config_obs_sim['mcmc_run_file'] = os.path.join(
+    config_obs_sim['mcmc_npz_file'] = os.path.join(
         config_obs_sim['mcmc_out_dir'], config_obs_sim['mcmc_prefix'] + '_run_{0}.npz'.format(str(config_obs_sim['config'])))
+    config_obs_sim['mcmc_backend_file'] = os.path.join(
+        config_obs_sim['mcmc_out_dir'], config_obs_sim['mcmc_prefix'] + '_run_{0}.hdf5'.format(str(config_obs_sim['config'])))
 
 
     return config_obs_sim, data_obs, data_sim
@@ -500,16 +500,18 @@ def mcmc_save_results(mcmc_position, mcmc_sampler, mcmc_file,
         (-1, mcmc_ndims))
     mcmc_chains = mcmc_sampler.chain
     mcmc_lnprob = mcmc_sampler.lnprobability
+    acceptance_fraction = mcmc_sampler.acceptance_fraction
     ind_1, ind_2 = np.unravel_index(np.argmax(mcmc_lnprob, axis=None),
                                     mcmc_lnprob.shape)
     mcmc_best = mcmc_chains[ind_2, ind_1, :]
 #     mcmc_params_stats = mcmc_samples_stats(mcmc_samples)
 
-    np.savez(mcmc_file,
+    print(mcmc_file)
+    np.savez(str(mcmc_file),
              samples=mcmc_samples, lnprob=np.array(mcmc_lnprob),
              best=np.array(mcmc_best), chains=mcmc_chains,
              position=np.asarray(mcmc_position),
-             acceptance=np.array(mcmc_sampler.acceptance_fraction))
+             acceptance=np.array(acceptance_fraction))
 
     if verbose:
         print("#------------------------------------------------------")
@@ -591,7 +593,7 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True,
 
         # Set up the backend to save results
         # Don't forget to clear it in case the file already exists
-        filename = "backend.hdf5"
+        filename = config['mcmc_backend_file']
         backend = emcee.backends.HDFBackend(filename)
         backend.reset(config['mcmc_nwalkers'], config['mcmc_ndims'])
 
@@ -612,7 +614,7 @@ def emcee_fit(config, cosmos_data, sim_data, verbose=True,
                                               progress=True,
                                               store= True):
             mcmc_save_results(sample.coords, sampler,
-                              config['mcmc_run_file'], config['mcmc_ndims'],
+                              config['mcmc_npz_file'], config['mcmc_ndims'],
                               verbose=True)
 
 
@@ -691,13 +693,6 @@ def create_dwarf_catalog_with_matched_mass_distribution(dwarf_masses, mock_galax
     # import pdb;  pdb.set_trace()
     # sort first to speed up future calculations
     mock_galaxies.sort(order = str('stellar_mass'))
-    plt.hist(mock_galaxies['stellar_mass'], bins=500)
-    plt.title('all mock masses in the COSMOS dwarf range')
-    plt.show()
-
-    plt.hist(10**(mock_galaxies['stellar_mass'][500000:520000]), bins=500)
-    plt.title("between sorted dwarf masses 500000 and 520000 ")
-    plt.show()
 
     # indices of single nearest mock mass for each dwarf mass
     indices = np.searchsorted(mock_galaxies['stellar_mass'], dwarf_masses)
