@@ -6,7 +6,7 @@ model_type: '5SHMR+scatter (Vmax@Mpeak)'
 param_ini: [0.4, 0.2, 2.4, 10.91, 0.45, 0.3, 0.2]
 param_low: [0.0, 0.0, 0.0, 10.5, 0.4, 0.2, -0.4 ]
 param_upp: [2.0, 2.0, 5, 11.3, 0.5, 0.9, 3.0]
-param_sig: [0.1, 0.1, 0.05, 0.02, 0.01, 0.01, 0.2 ]
+param_sig: [0.05, 0.05, 0.05, 0.02, 0.01, 0.01, 0.2 ]
 
 param_labels: ['scatter_model_param1',
                'scatter_model_param2',
