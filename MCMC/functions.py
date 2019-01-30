@@ -303,8 +303,8 @@ def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_f
     #plot details
     plt.xlabel('log(M)')
     plt.ylabel('log(Phi)')
-    plt.xlim([8,12.5])
-    plt.ylim([-10,0])
+    plt.xlim([8,11.6])
+    plt.ylim([-6,-1])
     plt.legend(loc='lower left')
 
     plt.show()
@@ -316,12 +316,12 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
     plt.loglog()
 
     #plot sim
-    ax.plot(sim_r, sim_ds, label=r'Bol-Planck: ', linestyle='--', zorder=3, marker='o')
+    ax.plot(sim_r, sim_ds, label=r'Model', linestyle='--', zorder=3, marker='o')
     # ax.fill_between(sim_r, sim_ds,sim_ds, alpha=0.5)
 
     #plot observations
     ax.errorbar(observed_signal_table['R(Mpc)'], observed_signal_table['SigR(Msun/pc^2)'],
-                yerr=observed_signal_table['err(weights)'], marker='o', label=r'Laigle+2016: ', linewidth=3, zorder=1)
+                yerr=observed_signal_table['err(weights)'], marker='o', label=r'COSMOS data', linewidth=3, zorder=1)
     # ax.fill_between(cosmos_lensing_signal['R(Mpc)'], cosmos_lensing_signal['SigR(Msun/pc^2)']+cosmos_lensing_signal['err(weights)'],
     #                 cosmos_lensing_signal['SigR(Msun/pc^2)']-cosmos_lensing_signal['err(weights)'], alpha=0.5)
 
