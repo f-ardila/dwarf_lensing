@@ -290,21 +290,24 @@ def compute_deltaSigma(stellar_masses, config, cosmos_data, sim_data):
 def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_fit_table):
 
     # plot sim
-    plt.plot(sim_mass_centers, sim_logPhi, c='r', label='Bolshoi-Planck halos')
+    plt.plot(sim_mass_centers, sim_logPhi, c='r', label='Bolshoi-Planck halos',
+             linewidth = 2, linestyle='--')
 
     # plot COSMOS
-    plt.plot(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi'], label='COSMOS z~0.2 fit')
-    plt.fill_between(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi_inf'],
-                     cosmos_SMF_fit_table['log_phi_sup'], alpha=0.5)
+    plt.plot(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi'], label='COSMOS z~0.2 fit',
+             linewidth=3, zorder=0)
+    # plt.fill_between(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi_inf'],
+    #                  cosmos_SMF_fit_table['log_phi_sup'], alpha=0.5)
     plt.errorbar(cosmos_SMF_points_table['logM'], cosmos_SMF_points_table['Phi'],
                  yerr=[cosmos_SMF_points_table['Phi_err+'],cosmos_SMF_points_table['Phi_err-']], fmt='o', elinewidth=3,
-                markersize=5, c='#1f77b4', label='COSMOS z~0.2 points')
+                markersize=5, c='#1f77b4', label='COSMOS z~0.2 points',
+                zorder=3)
 
     #plot details
     plt.xlabel('log(M)')
     plt.ylabel('log(Phi)')
     plt.xlim([8,11.6])
-    plt.ylim([-6,-1])
+    plt.ylim([-5,-1])
     plt.legend(loc='lower left')
 
     plt.show()
