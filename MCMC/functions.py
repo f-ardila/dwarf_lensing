@@ -46,18 +46,23 @@ def load_observed_data(cfg, verbose=True):
     """Load the observed data."""
 
     #dwarf masses
-    cosmos_dwarf_sample_data  = fits.open(os.path.join(cfg['data_location'], cfg['cosmos_dir'],
-                                       cfg['cosmos_dwarf_file']))[1].data
+    cosmos_dwarf_sample_data  = fits.open(os.path.join(cfg['data_location'],
+                                                       cfg['cosmos_dir'],
+                                                       cfg['cosmos_dwarf_file']))[1].data
     cosmos_dwarf_masses = cosmos_dwarf_sample_data['mass_med']
 
     #SMF
-    cosmos_SMF_fit_table = ascii.read(os.path.join(cfg['data_location'], cfg['cosmos_dir'],
-                                       cfg['cosmos_SMF_fit_file']))
-    cosmos_SMF_points_table = ascii.read(os.path.join(cfg['data_location'], cfg['cosmos_dir'],
-                                       cfg['cosmos_SMF_points_file']))
+    cosmos_SMF_fit_table = ascii.read(os.path.join(cfg['data_location'],
+                                                   cfg['cosmos_dir'],
+                                                   cfg['cosmos_SMF_fit_file']))
+    cosmos_SMF_points_table = ascii.read(os.path.join(cfg['data_location'],
+                                                      cfg['cosmos_dir'],
+                                                      cfg['cosmos_SMF_points_file']))
 
     #weak lensing
-    cosmos_lensing_table = ascii.read(os.path.join(cfg['data_location'], cfg['cosmos_dir'], cfg['cosmos_wl_file']))
+    cosmos_lensing_table = ascii.read(os.path.join(cfg['data_location'],
+                                                   cfg['cosmos_dir'],
+                                                   cfg['cosmos_wl_file']))
 
     cosmos_wl_r = cosmos_lensing_table['R(Mpc)']
     cosmos_wl_ds = cosmos_lensing_table['SigR(Msun/pc^2)']
@@ -71,21 +76,28 @@ def load_observed_data(cfg, verbose=True):
 #                   (cfg['obs_area'] / 41254.0)).value
 #     cfg['obs_volume'] = obs_volume
 
-    return {'cosmos_wl_r': cosmos_wl_r, 'cosmos_wl_ds': cosmos_wl_ds, 'cosmos_wl_table': cosmos_lensing_table,
-            'cosmos_SMF_fit_table': cosmos_SMF_fit_table, 'cosmos_SMF_points_table': cosmos_SMF_points_table,
-             'cosmos_dwarf_masses': cosmos_dwarf_masses}, cfg
+    return {'cosmos_wl_r': cosmos_wl_r,
+            'cosmos_wl_ds': cosmos_wl_ds,
+            'cosmos_wl_table': cosmos_lensing_table,
+            'cosmos_SMF_fit_table': cosmos_SMF_fit_table,
+            'cosmos_SMF_points_table': cosmos_SMF_points_table,
+            'cosmos_dwarf_masses': cosmos_dwarf_masses}, cfg
 
 def load_sim_data(cfg):
     """Load the UniverseMachine data."""
 
 
     #read in halocat
-    halocat = CachedHaloCatalog(simname = cfg['sim_name'], halo_finder = cfg['sim_halo_finder'],
-                            version_name = cfg['sim_version_name'], redshift = cfg['sim_z'],
+    halocat = CachedHaloCatalog(simname = cfg['sim_name'],
+                                halo_finder = cfg['sim_halo_finder'],
+                                version_name = cfg['sim_version_name'],
+                                redshift = cfg['sim_z'],
                                 ptcl_version_name=cfg['sim_ptcl_version_name']) # doctest: +SKIP
 
     #read in particle table
-    ptcl_table = Table.read(os.path.join(cfg['data_location'], cfg['sim_dir'], cfg['sim_particle_file']), path='data')
+    ptcl_table = Table.read(os.path.join(cfg['data_location'],
+                                         cfg['sim_dir'],
+                                         cfg['sim_particle_file']), path='data')
     px = ptcl_table['x']
     py = ptcl_table['y']
     pz = ptcl_table['z']
@@ -175,9 +187,10 @@ def predict_model(param, config, obs_data, sim_data,
             print('mock.populate')
 
         else:
-            sim_data['model'] = PrebuiltSubhaloModelFactory('behroozi10', redshift=config['sim_z'],
-                                            scatter_abscissa=[12, 15],
-                                            scatter_ordinates=[param[0], param[1]])
+            sim_data['model'] = PrebuiltSubhaloModelFactory('behroozi10',
+                                                            redshift=config['sim_z'],
+                                                            scatter_abscissa=[12, 15],
+                                                            scatter_ordinates=[param[0], param[1]])
 
             for i, model_param in enumerate(config['param_labels']):
                 sim_data['model'].param_dict[model_param] = param[i]
@@ -271,11 +284,14 @@ def compute_deltaSigma(stellar_masses, config, cosmos_data, sim_data):
     period=np.ones(3)*config['sim_lbox']
     r_bins = np.logspace(-2.1,0,20)
 
-    mass_encl = total_mass_enclosed_per_cylinder(galaxies, sim_data['particles'], sim_data['particle_masses'],
-                                                 sim_data['downsampling_factor'], r_bins, period)
+    mass_encl = total_mass_enclosed_per_cylinder(galaxies, sim_data['particles'],
+                                                 sim_data['particle_masses'],
+                                                 sim_data['downsampling_factor'],
+                                                 r_bins, period)
 
     # delta Sigma
-    rp, ds = delta_sigma_from_precomputed_pairs(galaxies, mass_encl, r_bins, period, cosmology=config['sim_cosmo'])
+    rp, ds = delta_sigma_from_precomputed_pairs(galaxies, mass_encl, r_bins,
+                                                period, cosmology=config['sim_cosmo'])
 
     #convert to correct physical units
     ds = ds/1e12 # convert units pc^-2 --> Mpc^-2
@@ -294,14 +310,15 @@ def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_f
              linewidth = 2, linestyle='--')
 
     # plot COSMOS
-    plt.plot(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi'], label='COSMOS z~0.2 fit',
-             linewidth=3, zorder=0)
+    plt.plot(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi'],
+             label='COSMOS z~0.2 fit', linewidth=3, zorder=0)
     # plt.fill_between(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi_inf'],
     #                  cosmos_SMF_fit_table['log_phi_sup'], alpha=0.5)
     plt.errorbar(cosmos_SMF_points_table['logM'], cosmos_SMF_points_table['Phi'],
-                 yerr=[cosmos_SMF_points_table['Phi_err+'],cosmos_SMF_points_table['Phi_err-']], fmt='o', elinewidth=3,
-                markersize=5, c='#1f77b4', label='COSMOS z~0.2 points',
-                zorder=3)
+                 yerr=[cosmos_SMF_points_table['Phi_err+'],
+                 cosmos_SMF_points_table['Phi_err-']], fmt='o', elinewidth=3,
+                 markersize=5, c='#1f77b4', label='COSMOS z~0.2 points',
+                 zorder=3)
 
     #plot details
     plt.xlabel('log(M)')
@@ -324,7 +341,8 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
 
     #plot observations
     ax.errorbar(observed_signal_table['R(Mpc)'], observed_signal_table['SigR(Msun/pc^2)'],
-                yerr=observed_signal_table['err(weights)'], marker='o', label=r'COSMOS data', linewidth=3, zorder=1)
+                yerr=observed_signal_table['err(weights)'], marker='o',
+                label=r'COSMOS data', linewidth=3, zorder=1)
     # ax.fill_between(cosmos_lensing_signal['R(Mpc)'], cosmos_lensing_signal['SigR(Msun/pc^2)']+cosmos_lensing_signal['err(weights)'],
     #                 cosmos_lensing_signal['SigR(Msun/pc^2)']-cosmos_lensing_signal['err(weights)'], alpha=0.5)
 
@@ -341,7 +359,8 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
 
 def plot_from_params(params, config, cosmos_data, sim_data):
     smf_mass_bins, smf_log_phi, wl_r, wl_ds = predict_model(params, config, cosmos_data, sim_data)
-    plot_SMF(smf_mass_bins, smf_log_phi, cosmos_data['cosmos_SMF_points_table'], cosmos_data['cosmos_SMF_fit_table'])
+    plot_SMF(smf_mass_bins, smf_log_phi, cosmos_data['cosmos_SMF_points_table'],
+             cosmos_data['cosmos_SMF_fit_table'])
     plot_deltaSigma(cosmos_data['cosmos_wl_table'], wl_r, wl_ds)
 
 ################################################################################
@@ -369,7 +388,8 @@ def smf_lnlike(obs_smf_points_table, sim_smf_mass_bins, sim_smf_log_phi):
     smf_diff = (np.array(sim_smf_log_phi_interpolated) - np.array(obs_smf_points_table['Phi']))
 
     # variance
-    obs_mean_smf_error = np.nanmean([obs_smf_points_table['Phi_err+'], obs_smf_points_table['Phi_err-'] ], axis=0)
+    obs_mean_smf_error = np.nanmean([obs_smf_points_table['Phi_err+'],
+                                    obs_smf_points_table['Phi_err-'] ], axis=0)
     smf_var = np.array(obs_mean_smf_error ** 2)
 
     # chi2
@@ -435,7 +455,8 @@ def ln_like(param_tuple, config, obs_data, sim_data,
         return smf_lnlike_value
 
     # Likelihood for DeltaSigma
-    dsigma_lnlike_value = dsigma_lnlike(obs_data['cosmos_wl_table'], sim_wl_r, sim_wl_ds, obs_data)
+    dsigma_lnlike_value = dsigma_lnlike(obs_data['cosmos_wl_table'],
+                                        sim_wl_r, sim_wl_ds, obs_data)
     if ds_only:
         print('DS ONLY')
         return dsigma_lnlike_value
@@ -752,7 +773,7 @@ def get_chris_stellar_masses(params, config, sim_data):
         range = [12,15]
     elif x_field == 'halo_Vmax@Mpeak':
         range = [2,3]
-        
+
     scatter_params = np.polyfit(range,[params[0],params[1]],1)
     b_params = params[2:]
 
