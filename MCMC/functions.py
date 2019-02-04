@@ -736,7 +736,7 @@ def get_chris_stellar_masses(params, config, sim_data):
         x_field: 'halo_mvir' or "halo_Vmax@Mpeak" """
 
     x_field = config['sim_mass_x_field']
-
+    halo_data = sim_data['halocat'].halo_table
     #2 params when testing
     if len(params) == 2:
         scatter_params = params
@@ -745,17 +745,15 @@ def get_chris_stellar_masses(params, config, sim_data):
         elif x_field == 'halo_Vmax@Mpeak':
             b_params = [2.4, 10.91, 0.45, 0.3, 0.2]
 
-        return get_sm_for_sim(sim_data, b_params, scatter_params, x_field)
+        return get_sm_for_sim(halo_data, b_params, scatter_params, x_field)
 
     #convert scatter parameters from 2 points to slope and intercept
     if x_field == 'halo_mvir':
         range = [12,15]
     elif x_field == 'halo_Vmax@Mpeak':
         range = [2,3]
+        
     scatter_params = np.polyfit(range,[params[0],params[1]],1)
-
     b_params = params[2:]
-
-    halo_data = sim_data['halocat'].halo_table
 
     return get_sm_for_sim(halo_data, b_params, scatter_params, x_field)
