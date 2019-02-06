@@ -4,10 +4,10 @@ config: Vmax_5
 # adjusted from previous runs
 model_type: '5SHMR+scatter (Vmax@Mpeak)'
 # param_ini: [0.1,0.1, 2.5, 10.9, 0.1, 0.3, 0.1]
-param_ini: [ 0.51,  0.11,  2.72,  11.02,  0.12, 0.85, 0.030]
-param_low: [0.0, 0.0, 0.0, 10.5, 0.0, 0.2, -0.4 ]
-param_upp: [2.0, 2.0, 3.5, 11.3, 0.5, 0.9, 3.0]
-param_sig: [0.05, 0.05, 0.02, 0.02, 0.01, 0.01, 0.2 ]
+param_ini: [0.51, 0.11, 2.72, 11.02, 0.12, 0.85, 0.030]
+param_low: [0.00, 0.00, 2.50, 10.5,  0.10, 0.0, -1.0 ]
+param_upp: [2.00, 2.00, 3.50, 12.0,  0.5,  5.0,  1.5]
+param_sig: [0.05, 0.01, 0.05, 0.05,  0.01, 0.05, 0.05 ]
 
 param_labels: ['scatter_model_param1',
                'scatter_model_param2',
