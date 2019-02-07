@@ -2,6 +2,8 @@ from halotools.sim_manager import TabularAsciiReader
 from halotools.sim_manager.rockstar_hlist_reader import RockstarHlistReader
 #python 3 gives error about converting unicode 'TypeError: No conversion path for dtype: dtype('<U12')'
 
+#TODO: keep all columns in hdf5 file and find a way to select useful ones in other
+# script
 
 #halotools catalog
 
@@ -20,6 +22,7 @@ halo_cat_file='/Users/fardila/Documents/GitHub/dwarf_lensing/Data/bplanck/hlist_
 
 output_fname = '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/bplanck/hlist_0.78209.hdf5'
 columns_to_keep_dict = {'halo_id': (1, 'i8'),
+                        'halo_pid': (5, 'i8'),
                         'halo_upid': (6, 'i8'),
                         'halo_mvir': (10, 'f4'),
                         'halo_x': (17, 'f4'),
