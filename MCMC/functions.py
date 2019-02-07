@@ -305,9 +305,10 @@ def compute_deltaSigma(stellar_masses, config, cosmos_data, sim_data):
 ################################################################################
 def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_fit_table):
 
+    plt.figure(figsize=[10,8])
     # plot sim
-    plt.plot(sim_mass_centers, sim_logPhi, c='r', label='Bolshoi-Planck halos',
-             linewidth = 2, linestyle='--')
+    plt.plot(sim_mass_centers, sim_logPhi, c='r', label='Best fit model',
+             linewidth = 3, linestyle='--')
 
     # plot COSMOS
     plt.plot(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi'],
@@ -317,15 +318,20 @@ def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_f
     plt.errorbar(cosmos_SMF_points_table['logM'], cosmos_SMF_points_table['Phi'],
                  yerr=[cosmos_SMF_points_table['Phi_err+'],
                  cosmos_SMF_points_table['Phi_err-']], fmt='o', elinewidth=3,
-                 markersize=5, c='#1f77b4', label='COSMOS z~0.2 points',
+                 markersize=8, c='#1f77b4', label='COSMOS z~0.2 data',
                  zorder=3)
 
     #plot details
-    plt.xlabel('log(M)')
-    plt.ylabel('log(Phi)')
+    plt.xlabel(r'$\log(M_\star [M_{\odot}])$', fontsize=20)
+    plt.ylabel(r'$\log(dN/dM_\star [Mpc^{-3} dex^{-1}])$', fontsize=20)
     plt.xlim([8,11.6])
-    plt.ylim([-5,-1])
-    plt.legend(loc='lower left')
+    plt.ylim([-4.5,-1.25])
+    plt.legend(loc='lower left', fontsize=15)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+
+    plt.savefig('/Users/fardila/Documents/GitHub/dwarf_lensing/MCMC/plots/SMF.pdf',
+                dpi=100, format='pdf')
 
     plt.show()
 
