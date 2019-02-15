@@ -86,7 +86,7 @@ sim_dir: 'bplanck/'
 
 sim_name : 'bolshoi-planck'
 sim_halo_finder : 'rockstar'
-sim_version_name : 'bplanck_dwarfs'
+sim_version_name : 'UM_bplanck_dwarfs'
 sim_ptcl_version_name : 'bplanck_dwarfs'
 
 sim_z : 0.278625 #(1/0.78209)-1 ; a=0.78209
@@ -97,8 +97,8 @@ sim_particles_per_dimension: 2048
 sim_h0: 0.678
 sim_omega_m: 0.307
 
-sim_halo_cat_file: 'hlist_0.78209.list'
-sim_output_fname : 'hlist_0.78209.hdf5'
+sim_halo_cat_file: 'UM_sfr_catalog_0.782092_proper_bounds.txt'
+sim_output_fname : 'UM_hlist_0.78209.hdf5'
 sim_particle_file : 'bplanck_particles_100m_a0.78209.hdf5'
 
 sim_halotools : False
