@@ -481,6 +481,10 @@ def ln_prob_global(param_tuple, config, cosmos_data, sim_data,
     param_tuple: tuple of model parameters.
 
     """
+
+    if config['flat_scatter']:
+        param_tuple[1] = param_tuple[0]
+        
     print(param_tuple)
 
     lp = flat_prior(param_tuple, config['param_low'], config['param_upp'])
