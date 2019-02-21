@@ -303,30 +303,30 @@ def compute_deltaSigma(stellar_masses, config, cosmos_data, sim_data):
 ################################################################################
 # Plotting
 ################################################################################
-def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_fit_table):
+def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table,
+             cosmos_SMF_fit_table, labels=None):
 
     plt.figure(figsize=[10,8])
-    # plot sim
-    plt.plot(sim_mass_centers, sim_logPhi, c='r', label='Best fit model',
-             linewidth = 3, linestyle='--')
-
     # plot COSMOS
-    plt.plot(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi'],
-             label='COSMOS z~0.2 fit', linewidth=3, zorder=0)
-    # plt.fill_between(cosmos_SMF_fit_table['log_m'], cosmos_SMF_fit_table['log_phi_inf'],
-    #                  cosmos_SMF_fit_table['log_phi_sup'], alpha=0.5)
     plt.errorbar(cosmos_SMF_points_table['logM'], cosmos_SMF_points_table['Phi'],
                  yerr=[cosmos_SMF_points_table['Phi_err+'],
                  cosmos_SMF_points_table['Phi_err-']], fmt='o', elinewidth=3,
-                 markersize=8, c='#1f77b4', label='COSMOS z~0.2 data',
+                 markersize=8, label='COSMOS z~0.2 data',
                  zorder=3)
+     # plot sim
+    plt.plot(sim_mass_centers, sim_logPhi, label='Best fit model',
+             linewidth = 3, linestyle='--')
 
     #plot details
     plt.xlabel(r'$\log(M_\star [M_{\odot}])$', fontsize=20)
     plt.ylabel(r'$\log(dN/dM_\star [Mpc^{-3} dex^{-1}])$', fontsize=20)
     plt.xlim([8,11.6])
     plt.ylim([-4.5,-1.25])
-    plt.legend(loc='lower left', fontsize=15)
+    #labels for legend. matplotlib does not have an easy way of doing this when plotting multiple arrays at once
+    if not labels:
+         plt.legend(loc='lower left', fontsize=15)
+    else:
+        plt.legend(labels+['COSMOS z~0.2 data'], loc='lower left', fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
 
@@ -335,20 +335,23 @@ def plot_SMF(sim_mass_centers, sim_logPhi, cosmos_SMF_points_table, cosmos_SMF_f
 
     plt.show()
 
-def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
+def plot_deltaSigma(observed_signal_table, sim_r, sim_ds, labels=None):
 
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 
     plt.loglog()
 
-    #plot sim
-    ax.plot(sim_r, sim_ds, label=r'Model', linestyle='--', zorder=3, marker='o')
-    # ax.fill_between(sim_r, sim_ds,sim_ds, alpha=0.5)
-
     #plot observations
     ax.errorbar(observed_signal_table['R(Mpc)'], observed_signal_table['SigR(Msun/pc^2)'],
                 yerr=observed_signal_table['err(weights)'], marker='o',
                 label=r'COSMOS data', linewidth=3, zorder=1)
+
+    #plot sim
+    ax.plot(sim_r, sim_ds, linestyle='--', zorder=3, marker='o',
+            label='Best fit model')
+    # ax.fill_between(sim_r, sim_ds,sim_ds, alpha=0.5)
+
+
     # ax.fill_between(cosmos_lensing_signal['R(Mpc)'], cosmos_lensing_signal['SigR(Msun/pc^2)']+cosmos_lensing_signal['err(weights)'],
     #                 cosmos_lensing_signal['SigR(Msun/pc^2)']-cosmos_lensing_signal['err(weights)'], alpha=0.5)
 
@@ -357,17 +360,36 @@ def plot_deltaSigma(observed_signal_table, sim_r, sim_ds):
 
     __=ax.set_xlabel(r'$R_{\rm p} $  $\rm{[Mpc]}$', fontsize=16)
     __=ax.set_ylabel(r'$\Delta\Sigma(R_{\rm p})$  $[M_{\odot} / {\rm pc}^2]$', fontsize=16)
-    __=ax.legend(loc='best', fontsize=13)
+    if not labels:
+         __=ax.legend( loc='best', fontsize=13)
+    else:
+        __=ax.legend(labels+['COSMOS z~0.2 data'], loc='best', fontsize=13)
     __=plt.xticks(fontsize=15); plt.yticks(fontsize=15)
 
     # plt.title('Matched Mass distribution')
     plt.show()
 
-def plot_from_params(params, config, cosmos_data, sim_data):
-    smf_mass_bins, smf_log_phi, wl_r, wl_ds = predict_model(params, config, cosmos_data, sim_data)
-    plot_SMF(smf_mass_bins, smf_log_phi, cosmos_data['cosmos_SMF_points_table'],
-             cosmos_data['cosmos_SMF_fit_table'])
-    plot_deltaSigma(cosmos_data['cosmos_wl_table'], wl_r, wl_ds)
+def plot_from_params(params, config, cosmos_data, sim_data, labels=None):
+    if isinstance(params[0], list): #more than one param tuple, i.e. comparing models
+        for param_tuple in params:
+            print(param_tuple)
+        model_data = [predict_model(param_tuple, config, cosmos_data, sim_data) for param_tuple in params]
+
+        smf_mass_bins = np.array([d[0] for d in model_data])
+        smf_log_phi = np.array([d[1] for d in model_data])
+        wl_r = np.array([d[2] for d in model_data])
+        wl_ds = np.array([d[3] for d in model_data])
+        plot_SMF(smf_mass_bins.T, smf_log_phi.T, cosmos_data['cosmos_SMF_points_table'],
+                 cosmos_data['cosmos_SMF_fit_table'], labels=labels)
+        plot_deltaSigma(cosmos_data['cosmos_wl_table'], wl_r.T, wl_ds.T,
+                        labels=labels)
+    else: #single param tuple
+        param_tuple = params
+        print(param_tuple)
+        smf_mass_bins, smf_log_phi, wl_r, wl_ds = predict_model(params, config, cosmos_data, sim_data)
+        plot_SMF(smf_mass_bins, smf_log_phi, cosmos_data['cosmos_SMF_points_table'],
+                 cosmos_data['cosmos_SMF_fit_table'])
+        plot_deltaSigma(cosmos_data['cosmos_wl_table'], wl_r, wl_ds)
 
 ################################################################################
 # Probability functions
@@ -484,7 +506,10 @@ def ln_prob_global(param_tuple, config, cosmos_data, sim_data,
 
     if config['flat_scatter']:
         param_tuple[1] = param_tuple[0]
-        
+    if config['fixed_scatter']:
+        param_tuple[0] = 0.2
+        param_tuple[1] = 0.2
+
     print(param_tuple)
 
     lp = flat_prior(param_tuple, config['param_low'], config['param_upp'])
