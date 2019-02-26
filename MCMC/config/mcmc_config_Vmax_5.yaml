@@ -23,8 +23,8 @@ redshift_param_labels: ['smhm_m1_a',
                         'smhm_delta_a',
                         'smhm_gamma_a']
 
-param_labels_latex: ['$\sigma_{12}$',
-                     '$\sigma_{15}$',
+param_labels_latex: ['$\sigma_{2}$',
+                     '$\sigma_{3}$',
                      '$\log_{10}(V_{1})$',
                      '$\log_{10}(M_{\star, 0})$',
                      '$\beta$',
