@@ -33,7 +33,7 @@ param_labels_latex: ['$\sigma_{2}$',
 
 # MCMC Runs
 mcmc_out_dir: 'MCMC/outfiles/'
-mcmc_prefix: 'UM_cosmos_bplanck'
+mcmc_prefix: 'cosmos_bplanck' #make sure to remove the initial 'UM_'
 
 mcmc_nthreads: 1
 
