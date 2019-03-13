@@ -295,8 +295,8 @@ def compute_deltaSigma(stellar_masses, config, cosmos_data, sim_data):
 
     #convert to correct physical units
     ds = ds/1e12 # convert units pc^-2 --> Mpc^-2
-    ds = ds*config['sim_h0']*((1+config['sim_z'])**2) #convert from comoving to physical
-    rp = rp / float(config['sim_h0']*(1+config['sim_z'])) #convert from comoving to physical
+    ds = ds*config['sim_h0']*((1+config['sim_z'])**2) #convert from comoving h-inverse to physical real-h
+    rp = rp / float(config['sim_h0']*(1+config['sim_z'])) #convert from comoving h-inverse to physical real-h
 
     return rp, ds
 
