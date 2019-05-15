@@ -23,9 +23,14 @@ from halotools.empirical_models import PrebuiltSubhaloModelFactory
 from halotools.mock_observables import delta_sigma_from_precomputed_pairs, total_mass_enclosed_per_cylinder
 from halotools.utils import randomly_downsample_data
 
-sys.path.append('/Users/fardila/Documents/GitHub/cb/')
-from get_sm_for_sim import *
+#Chris' SM
+from cb.get_sm_for_sim import *
 
+#Asher's likelihood
+owd = os.getcwd()
+os.chdir("/Users/fardila/Documents/GitHub/ddd")
+from ddd.ddd import logp_ddd as ddd_lnlike
+os.chdir(owd)
 #memory profile
 # from guppy import hpy
 # import datetime
@@ -216,15 +221,15 @@ def predict_model(param, config, obs_data, sim_data,
     smf_mass_bins, smf_log_phi = compute_SMF(stellar_masses, config, nbins=100)
     print('SMF computed')
     if smf_only:
-        return smf_mass_bins, smf_log_phi, None, None
+        return smf_mass_bins, smf_log_phi, None, None, stellar_masses
 
     # Predict DeltaSigma profiles
     wl_r, wl_ds = compute_deltaSigma(stellar_masses, config, obs_data, sim_data)
     print('DS computed')
     if ds_only:
-        return None, None, wl_r, wl_ds
+        return None, None, wl_r, wl_ds, stellar_masses
 
-    return smf_mass_bins, smf_log_phi, wl_r, wl_ds
+    return smf_mass_bins, smf_log_phi, wl_r, wl_ds, stellar_masses
 
 def compute_SMF(log_stellar_masses, config, nbins=100):
 
@@ -472,7 +477,7 @@ def ln_like(param_tuple, config, obs_data, sim_data,
     model_outputs = predict_model(parameters, config, obs_data, sim_data,
                                   smf_only, ds_only)
 
-    sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = model_outputs
+    sim_smf_mass_bins, sim_smf_log_phi, sim_wl_r, sim_wl_ds = model_outputs[:-1]
     print('model predicted')
 
     # Likelihood for SMFs.
@@ -489,10 +494,21 @@ def ln_like(param_tuple, config, obs_data, sim_data,
         print('DS ONLY')
         return dsigma_lnlike_value
 
+    # Likelihood Dark Deficient Doppelgangers
+    logM_halo = sim_data['halocat'].halo_table['halo_mvir']
+    logM_stellar = model_outputs[-1]
+    logMvir, logcvir = parameters[7,8]
+    vsys_df2, vsys_df4 = parameters[9,10]
+    logUpsilon, sym_beta, f_Re = parameters[11:]
+    ddd_lnlike_value = ddd_lnlike(logMvir_um, logMst_um,
+                                  logMvir, logcvir,
+                                  vsys_df2, vsys_df4,
+                                  logUpsilon, sym_beta, f_Re)
+
     if not np.isfinite(smf_lnlike_value) or not np.isfinite(dsigma_lnlike_value):
         return -np.inf
 
-    return smf_lnlike_value + config['mcmc_wl_weight'] * dsigma_lnlike_value
+    return smf_lnlike_value + dsigma_lnlike_value + ddd_lnlike_value
 
 def ln_prob_global(param_tuple, config, cosmos_data, sim_data,
             smf_only=False, ds_only=False):
