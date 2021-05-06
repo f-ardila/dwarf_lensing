@@ -1,2 +1,6 @@
 Data/*
+*.pyc
 .ipynb_checkpoints/*
+*/.ipynb_checkpoints/*
+MCMC/notebooks/.ipynp_checkpoints
+.DS_Store
