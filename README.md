@@ -5,7 +5,7 @@ Project goal:
 - `MCMC`: most of the work is done here. This is where MCMCs were run to fit model parameters to data.
 - `examples`: notebooks trying different specific issues.
 - `mock_dwarfs`: catalogs of mock dwarf galaxies built by sampling existing COSMOS dwarfs to match distribution.
-- `Data`: too large for GitHub. Contains data used. presently in Lux.
+- `Data`: too large for GitHub. data in lux: `/data/groups/leauthaud/fardila/dwarf_lensing`
 
 ### Notes
 - mostly run on graymalking and saved to my computer (Chia): run with printing in realtime (unbuffered) piping to log file and allow for disconnecting from graymalkin:
