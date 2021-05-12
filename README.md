@@ -11,6 +11,9 @@ Project goal:
 ## Files
 - `dwarf_lensing.ipynb` : first step in the project and provides a general overview of the data, the goal, and the methods.
 - `bplanck_dwarfs_matched_distribution.ipynb` : we use the subsamples of bplanck galaxies with mass distributions matched to COSMOS to measure lensing.
+- `variable_scatter_demo.ipynb` : demo from Andrew Hearin showing how to use halotools to build SHMR mdoel with variable scatter
+- `halotools_vs_chris.ipynb` : comparing the use of halotools vs. Chris Bradshaw's code for creating a stellar mass sample using SHMR parameters. Chris' code is faster because it's more specialized.
+- `histogram_with_Asher_ddd.ipynb` : results from Asher's run of his Dark matter Deficient Doppelgangers (DDDs).
 
 ### Notes
 - mostly run on graymalking and saved to my computer (Chia): run with printing in realtime (unbuffered) piping to log file and allow for disconnecting from graymalkin:
