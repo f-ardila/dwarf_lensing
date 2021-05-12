@@ -1,5 +1,5 @@
 # Measuring weak lensing in dwarf galaxies
-Project goal: Use MCMC to determine best fit parameters for Stellar-to-Halo Mass Relation (SHMR) model using variable scatter using weak lensing and stellar mass function (SMF).
+__Project goal__: Use MCMC to determine best fit parameters for Stellar-to-Halo Mass Relation (SHMR) model using variable scatter using weak lensing and stellar mass function (SMF).
 
 ## Directories
 - `MCMC`: most of the work is done here. This is where MCMCs were run to fit model parameters to data.
