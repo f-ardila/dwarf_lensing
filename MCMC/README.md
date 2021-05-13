@@ -1,4 +1,4 @@
-(Based off of Song's MCMC code from ASAP. That is why it might seem a bit more complicated than it needs to be.)
+(Based off of Song's initial MCMC code from his ASAP model. That is why it might seem a bit more complicated than it needs to be.)
 
 # Directories
 - `config`: 
