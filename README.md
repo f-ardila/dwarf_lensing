@@ -1,4 +1,4 @@
-# Measuring weak lensing in dwarf galaxies
+# Improved SHMR for dwarf galaxies using weak lensing
 **_Project goal_**: Determine best fit parameters for empirical Stellar-to-Halo Mass Relation (SHMR) model for dwarf galaxies in Bolshoi-Planck simulation, using MCMC techniques to fit to observed weak lensing and stellar mass function (SMF) data of dwarf galaxies from the COSMOS field catalog ([Laigle et al. 2016](https://ui.adsabs.harvard.edu/abs/2016ApJS..224...24L/abstract)).
 
 ## Directories
