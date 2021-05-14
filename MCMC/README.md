@@ -1,4 +1,5 @@
-Best fit model is from run `Vmax5`
+## Best fit model is from run `Vmax5`
+![CodeCogsEqn](https://user-images.githubusercontent.com/21298852/118330190-6a563380-b4d5-11eb-8cdb-8692d048202f.png)
 
 ![Best fit model SMF](plots/SMF.png)
 ![Best fit model DS](plots/ds.png)
@@ -18,4 +19,5 @@ Best fit model is from run `Vmax5`
 
 ***
 
-(Based off of Song's initial MCMC code from his ASAP model. That is why the structure might seem a bit more compelx than it needs to be.)
+(Based off of Song's initial MCMC code from his ASAP model. That is why the structure might seem a bit more complex than it needs to be.)
+
