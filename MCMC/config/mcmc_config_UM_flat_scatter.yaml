@@ -1,0 +1,109 @@
+#DOUBLE CHECK NAME SPELLING!
+config: UM_flat_scatter
+
+
+# Model parameters
+# adjusted from previous runs
+model_type: '5SHMR+scatter (Vmax@Mpeak)'
+# param_ini: [0.1,0.1, 2.5, 10.9, 0.1, 0.3, 0.1]
+param_ini: [0.51, 0.11, 2.72, 11.02, 0.12, 0.85, 0.030]
+param_low: [0.00, 0.00, 2.50, 10.5,  0.10, 0.0, -1.0 ]
+param_upp: [2.00, 2.00, 3.50, 12.0,  0.5,  5.0,  1.5]
+param_sig: [0.1, 0.1, 0.1, 0.1,  0.1, 0.1, 0.1 ]
+
+param_labels: ['scatter_model_param1',
+               'scatter_model_param2',
+               'smhm_m1_0',
+               'smhm_m0_0',
+               'smhm_beta_0',
+               'smhm_delta_0',
+               'smhm_gamma_0']
+
+redshift_param_labels: ['smhm_m1_a',
+                        'smhm_m0_a',
+                        'smhm_beta_a',
+                        'smhm_delta_a',
+                        'smhm_gamma_a']
+
+param_labels_latex: ['$\sigma_{2}$',
+                     '$\sigma_{3}$',
+                     '$\log_{10}(V_{1})$',
+                     '$\log_{10}(M_{\star, 0})$',
+                     '$\beta$',
+                     '$\delta$',
+                     '$\gamma$']
+
+flat_scatter: True
+
+# MCMC Runs
+mcmc_out_dir: 'MCMC/outfiles/'
+mcmc_prefix: 'cosmos_bplanck'
+
+mcmc_nthreads: 1
+
+mcmc_nwalkers: 15
+mcmc_nsamples: 20000
+mcmc_ndims: 7
+mcmc_moves: 'walk'
+mcmc_stretch_a: 2.0
+
+mcmc_smf_only: False
+mcmc_wl_only: False
+mcmc_wl_weight: 1.0
+
+mcmc_live_dangerously: True #for testing on smaller walker size
+
+
+
+#############################################################################
+#DATA
+data_location: '/Users/fardila/Documents/GitHub/dwarf_lensing/Data/'
+
+# COSMOS
+cosmos_dir: 'cosmos/'
+cosmos_catalog_reference : 'Laigle+2016'
+
+# dwarfs
+cosmos_dwarf_file: 'dwarf_sample_for_paper.fits'
+
+# SMF
+cosmos_SMF_fit_file: 'cosmos2015_dic2017_smf_z01-04_STY0.dat'
+cosmos_SMF_points_file: 'cosmos2015_dic2017_smf_z01-04_Vmax0_with_header.dat'
+
+#weak lensing
+cosmos_wl_file: 'dwarf_all_lens_laigle2015_nozp2.out'
+
+# Useful information in the catalog
+n_dwarfs: 6876
+mean_mass: 8.52695
+mean_z: 0.301442
+n_objects_with_specz: 1153
+frac_objects_with_specz: 0.167685
+
+#cosmology
+cosmos_h0 : 0.7
+cosmos_omega_m: 0.3
+
+#############################################################################
+# Simulation
+sim_dir: 'bplanck/'
+
+sim_name : 'bolshoi-planck'
+sim_halo_finder : 'rockstar'
+sim_version_name : 'UM_bplanck_dwarfs'
+sim_ptcl_version_name : 'bplanck_dwarfs'
+
+sim_z : 0.278625 #(1/0.78209)-1 ; a=0.78209
+sim_lbox : 250.0 #Mpc/h
+sim_particle_mass : 1.5e8
+sim_particles_per_dimension: 2048
+
+sim_h0: 0.678
+sim_omega_m: 0.307
+
+sim_halo_cat_file: 'UM_sfr_catalog_0.782092_proper_bounds.txt'
+sim_output_fname : 'UM_hlist_0.78209.hdf5'
+sim_particle_file : 'bplanck_particles_100m_a0.78209.hdf5'
+
+sim_halotools : False
+sim_mass_x_field : 'halo_Vmax@Mpeak'
