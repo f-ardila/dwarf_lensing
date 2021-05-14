@@ -5,3 +5,4 @@ Data/*
 MCMC/notebooks/.ipynp_checkpoints
 .DS_Store
 MCMC/logs/*
+MCMC/outfiles/*
