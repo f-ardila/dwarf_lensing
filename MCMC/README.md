@@ -1,5 +1,8 @@
 Best fit model is from run `Vmax5`
+
 ![Best fit model SMF](plots/SMF.png)
+![Best fit model DS](plots/ds.png)
+![Best fit model sigma Vmax](plots/sigma_Vmax.png)
 
 # Directories
 - `config`: config files for runs with different parameters.
