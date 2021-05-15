@@ -6,3 +6,5 @@ MCMC/notebooks/.ipynp_checkpoints
 .DS_Store
 MCMC/logs/*
 MCMC/outfiles/*
+mock_dwarfs/ddd/*
+MCMC/notebooks/.ipynb_checkpoints/
