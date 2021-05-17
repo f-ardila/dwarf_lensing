@@ -9,8 +9,8 @@
 - `config`: config files for runs with different parameters.
 - `logs`: output logs from various runs. Most useful for debugging.
 - `notebooks`: notebooks for code development and visualizing results.
-- `outfiles`: numpy arrays with MCMC samples from various runs.
 - `plots`: some plots from results.
+- `samples_from_model`: distribution of masses and modeled weak lensing profiles drawn from best fit parameters.
 
 # Files
 - `functions.py`: all functions used in MCMC located here.
